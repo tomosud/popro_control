@@ -2,6 +2,9 @@ from setuptools import setup, find_packages
 
 setup(
     name='popro_control',
-    version='0.1',
-    packages=find_packages()
+    version='0.11',
+    packages=find_packages(),
+    install_requires=[
+        'requests',  # 依存関係としてrequestsを追加
+    ]
 )
