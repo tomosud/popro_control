@@ -19,6 +19,17 @@ def load_settings(file_name='tool_setting.ini'):
         print(f"File '{file_name}' not found. Returning empty dictionary.")
         return {}
 
+def check_url(url):
+    try:
+        response = requests.get(url)
+        # 200〜299のステータスコードは成功を示す
+        if response.status_code >= 200 and response.status_code < 300:
+            return True, response.status_code
+        else:
+            return False, response.status_code
+    except requests.exceptions.RequestException as e:
+        # リクエストに関するエラーの処理
+        return False, str(e)
 
 
 # command.py
@@ -74,3 +85,16 @@ def demoui():
     dpg.show_viewport()
     dpg.start_dearpygui()
     dpg.destroy_context()
+
+def get(work=0):
+
+    url = "http://172.22.148.51:8080/gp/gpMediaList"
+
+    if work == 1:
+        url = "http://172.22.548.51:8080/gp/gpMediaList"
+
+    e = check_url(url)
+
+    print (e)
+    
+
