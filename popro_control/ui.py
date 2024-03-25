@@ -10,6 +10,7 @@ gopro_dict = {}
 
 temp_popro_ui_dict = {}
 
+gopro_recording = False
 
 def ret_uitag(name_str,memo):
 
@@ -22,11 +23,38 @@ def ret_uitag(name_str,memo):
     return uuidnow
 
 # command.py
+
 def print_this():
     print("Command function is called.")
     
     r = requests.get('https://www.yahoo.co.jp/')
     print(r.content)
+
+
+def recording():
+    
+    global gopro_recording
+
+    #あとで並列処理に変更する（同じタイミングで動くように）
+
+    if gopro_recording == False:
+        gopro_recording = True
+        #record
+        
+        for o in gopro_dict.keys():
+            cm.record(o,1)
+
+        dpg.configure_item("Record_button_main",label="STOP!!")
+    else:
+        gopro_recording = False
+        #stop recording
+        for o in gopro_dict.keys():
+            cm.record(o,0)
+
+        dpg.configure_item("Record_button_main",label="Record!!")
+
+    return gopro_recording
+
 
 def save_callback():
     print("Save Clicked")
@@ -43,7 +71,7 @@ def save_callback():
 
 def add_ui_test():
 
-    dpg.add_button(label="Record!!", callback=save_callback,width=300, height=100)
+    dpg.add_button(label="Record!!",tag='Record_button_main',callback=recording,width=300, height=100)
 
 def beep():
     print('beep')
@@ -55,7 +83,7 @@ def send_map(sender, app_data, user_data):
     print(f"user_data is url as: {user_data}")
 
     cm.command_send(user_data,'beep_mute')
-    cm.command_send(user_data,'beep')
+    #cm.command_send(user_data,'beep')
 
     m = cm.ret_all_media(url=user_data)
 

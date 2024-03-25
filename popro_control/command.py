@@ -268,7 +268,7 @@ def set_capture_mode(url):
     command_send(url,'Hypersmooth_OFF')
     command_send(url,'Horizon Lock OFF')		
 
-    command_send(url,'beep')	
+    #command_send(url,'beep')	
 
 def command_send(url,type):
 
@@ -296,6 +296,33 @@ def command_send(url,type):
     elif type == 'Horizon Lock OFF':
         url = url + '/gp/gpControl/setting/165/0'
 
+
+    try:
+        response = requests.get(url, timeout=10)  # タイムアウトを10秒に設定
+        if 200 <= response.status_code < 300:
+            print("Request was successful.")
+            # 応答内容を表示
+            print(response.text)
+        else:
+            print(f"Request failed with status code: {response.status_code}")
+    except requests.exceptions.RequestException as e:
+        print(f"Request failed: {e}")
+
+
+#あとでちゃんと書く
+def record(url,on_off):
+
+    '''
+    Trigger: http://10.5.5.9/gp/gpControl/command/shutter?p=1
+    Stop (Video/Timelapse): http://10.5.5.9/gp/gpControl/command/shutter?p=0
+    '''
+
+    if on_off == 'on':
+        url = url + '/gp/gpControl/command/shutter?p=1'
+    else:
+        url = url + '/gp/gpControl/command/shutter?p=0'
+
+    print ('url-----',url)
 
     try:
         response = requests.get(url, timeout=10)  # タイムアウトを10秒に設定
