@@ -1,19 +1,151 @@
 import requests
-import dearpygui.dearpygui as dpg
-import dearpygui.demo as demo
+
 import json
 from datetime import datetime, timezone, timedelta
 from zoneinfo import ZoneInfo  # Python 3.9以降で利用可能
 
+# 並列処理用
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
-
+gopro_dict = {}
 
 setting_dict = {'key1': 'value1', 'key2': 'value2'}
-
 testurl = 'http://172.20.195.51:8080/gp/gpMediaList'
-
 #以下をGoProの個体認証にも使う
 testBaseurl = 'http://172.20.195.51:8080'
+
+def check_urls(url,timeout=5):
+
+    #"http://172.20.195.51:8080/gp/gpMediaList"
+
+    url = url + '/gp/gpMediaList'
+
+    try:
+        # タイムアウトを10秒に設定
+        response = requests.get(url, timeout=timeout)
+        if 200 <= response.status_code < 300:
+            return True, response.status_code
+        else:
+            return False, response.status_code
+    except requests.exceptions.RequestException as e:
+        return False, str(e)
+
+
+#接続できているGoProを返す
+def ret_gopros(connect=True):
+
+    global gopro_dict
+
+    #goproのリストを返す
+    '''
+    一旦、以下のリストを返す
+    HERO12 Black01(172.24.106.51)
+    HERO12 Black02 (172.26.186.51)
+    HERO12 Black03 (172.20.195.51)
+    HERO12 Black04 (172.25.113.51)
+    HERO12 Black05 (172.22.148.51)
+    '''
+    data = ['HERO12 Black01(172.24.106.51)',
+    'HERO12 Black02 (172.26.186.51)',
+    'HERO12 Black03 (172.20.195.51)',
+    'HERO12 Black04 (172.25.113.51)',
+    'HERO12 Black05 (172.22.148.51)']
+
+    #ipをkeyにした辞書を返す
+    #'http://172.20.195.51:8080'
+
+    ret = {}
+    
+    for o in data:
+            
+            ip = o.split('(')[1].split(')')[0]
+
+            if '172.' in ip:
+                #usb
+                ip = 'http://' + ip + ':8080'
+
+                #
+                dictn = {'url':ip}
+
+                sep = o.split('(')[0].split(' ')
+
+                dictn['name'] = sep[0] + ' ' + sep[1]
+
+                dictn['checkurl'] = ip + '/gp/gpMediaList'
+
+                ret[ip] = dictn
+
+            elif '10.5.5.9' in ip:
+                #wifi
+                ip = 'http://' + ip
+
+                #未対応
+    print (ret)
+
+    newret = {}
+
+    if connect == True:
+
+        urls = ret.keys()
+            # 他のURLを追加
+
+        print ('Start Check!-----urls',urls)
+
+        # 成功したURLを格納するリスト
+        successful_urls = []
+
+        with ThreadPoolExecutor(max_workers=12) as executor:
+            future_to_url = {executor.submit(check_urls, url): url for url in urls}
+            for future in as_completed(future_to_url):
+                url = future_to_url[future]
+                try:
+                    success, _ = future.result()
+                    if success:
+                        successful_urls.append(url)  # 成功したURLをリストに追加
+                except Exception as exc:
+                    # エラー処理（ここでは単にエラーメッセージを表示）
+                    print(f"{url}: {exc}")
+
+        # 成功したURLのリストを表示
+        print("成功したURL:")
+        for o in successful_urls:
+            print(o)
+            newret[o] = ret[o]
+
+        gopro_dict = newret
+
+        set_to_bacic_capture_mode()
+
+        return newret
+    
+    return ret
+
+    '''
+        # 最大12のスレッドを使用して並列処理
+        with ThreadPoolExecutor(max_workers=12) as executor:
+            # すべてのURLに対して関数を実行
+            future_to_url = {executor.submit(check_urls, ret[url]['checkurl']): url for url in urls}
+            # 結果を収集
+            for future in as_completed(future_to_url):
+                url = future_to_url[future]
+                try:
+                    result = future.result()
+                    print ('\nFind!!')
+                    print(f"{url}: {result}")
+
+                    newret[url] = ret[url]
+
+                except Exception as exc:
+                    print('Can not connect -- ',f"{url}: {exc}")
+                    pass
+
+        print ('----check end' ,newret)
+
+    gopro_dict = newret
+
+    return newret
+    '''
+    #return ret
 
 # URLからJSONデータを取得する関数
 def get_json_data(url):
@@ -30,10 +162,10 @@ def get_json_data(url):
 '''
 #'http://172.20.195.51:8080/gp/gpMediaList'
 def ret_all_media(url=testBaseurl):
+
     gurl = url + '/gp/gpMediaList'
 
-
-    e = check_url(gurl)
+    e = check_url_one(gurl)
 
     print ('------',e)
 
@@ -91,8 +223,6 @@ def ret_all_media(url=testBaseurl):
 
     return data
 
-
-
 def save_settings(setting_dict, file_name='tool_setting.ini'):
     with open(file_name, 'w') as file:
         json.dump(setting_dict, file)
@@ -105,7 +235,7 @@ def load_settings(file_name='tool_setting.ini'):
         print(f"File '{file_name}' not found. Returning empty dictionary.")
         return {}
 
-def check_url(url):
+def check_url_one(url):
     try:
         response = requests.get(url)
         # 200〜299のステータスコードは成功を示す
@@ -116,92 +246,70 @@ def check_url(url):
     except requests.exceptions.RequestException as e:
         # リクエストに関するエラーの処理
         return False, str(e)
-
-
-# command.py
-def print_this():
-    print("Command function is called.")
     
-    r = requests.get('https://www.yahoo.co.jp/')
-    print(r.content)
+
+def set_to_bacic_capture_mode():
+
+    for o in gopro_dict.keys():
+
+        set_capture_mode(o)
+
+def set_capture_mode(url):
+
+    print ('set_capture_mode',url)
+    command_send(url,'beep_mute')
+
+    command_send(url,'1080p')
+    command_send(url,'60fps')
+    command_send(url,'Shutter_Auto')
+    command_send(url,'LOD_ON')
+    command_send(url,'Lens_Linear')
+    command_send(url,'Video_mode')
+    command_send(url,'Hypersmooth_OFF')
+    command_send(url,'Horizon Lock OFF')		
+
+    command_send(url,'beep')	
+
+def command_send(url,type):
 
 
-def save_callback():
-    print("Save Clicked")
-    print_this()
-
-    # 使用例
-    # 保存
-
-    save_settings(setting_dict)
-
-    # 読み込み
-    loaded_settings = load_settings()
-    print(loaded_settings)  # {'key1': 'value1', 'key2': 'value2'}    
-
-def add_ui_test():
-    dpg.add_text("Hello worldBB")
-    dpg.add_button(label="Save", callback=save_callback)
-
-def ui():
-
-    dpg.create_context()
-    dpg.create_viewport()
-    dpg.setup_dearpygui()
-
-    with dpg.window(label="Example Window"):
-        dpg.add_text("Hello world")
-        dpg.add_button(label="Save", callback=save_callback)
-        dpg.add_input_text(label="string")
-        dpg.add_slider_float(label="float")
-        add_ui_test()
-
-        with dpg.menu_bar():
-            dpg.add_menu(label="Menu Options")
-        with dpg.child_window(autosize_x=True, height=95):
-            with dpg.group(horizontal=True):
-                dpg.add_button(label="Header 1", width=75, height=75)
-                dpg.add_button(label="Header 2", width=75, height=75)
-                dpg.add_button(label="Header 3", width=75, height=75)
-                dpg.add_button(label="Header 1", width=75, height=75)
-                dpg.add_button(label="Header 2", width=75, height=75)                                            
-        with dpg.child_window(autosize_x=True, height=175):
-            with dpg.group(horizontal=True, width=0):
-                with dpg.child_window(width=102, height=150):
-                    with dpg.tree_node(label="Nav 1"):
-                        dpg.add_button(label="Button 1")
-                    with dpg.tree_node(label="Nav 2"):
-                        dpg.add_button(label="Button 2")
-                    with dpg.tree_node(label="Nav 3"):
-                        dpg.add_button(label="Button 3")
-                with dpg.child_window(width=300, height=150):
-                    dpg.add_button(label="Button 1")
-                    dpg.add_button(label="Button 2")
-                    dpg.add_button(label="Button 3")
-                with dpg.child_window(width=50, height=150):
-                    dpg.add_button(label="B1", width=25, height=25)
-                    dpg.add_button(label="B2", width=25, height=25)
-                    dpg.add_button(label="B3", width=25, height=25)
-        with dpg.group(horizontal=True):
-            dpg.add_button(label="Footer 1", width=175)
-            dpg.add_text("Footer 2")
-            dpg.add_button(label="Footer 3", width=175)
-
-    dpg.show_viewport()
-    dpg.start_dearpygui()
-    dpg.destroy_context()
+    if type =='beep':
+        url = url + '/gp/gpControl/setting/87/70'
+    elif type == 'beep_mute':
+        url = url + '/gp/gpControl/setting/87/0'       
+    elif type == '1080p':
+        url = url + '/gp/gpControl/setting/2/9'
+    elif type == '60fps':
+        url = url + '/gp/gpControl/setting/3/5'
+    elif type == 'Shutter_Auto':
+        url = url + '/gp/gpControl/setting/19/0'
+    elif type == 'LOD_ON':
+        url = url + '/gp/gpControl/setting/91/2'
+    elif type == 'Lens_Linear':
+        url = url + '/gp/gpControl/setting/121/4'
+    elif type == 'Video_mode':
+        url = url + '/gp/gpControl/setting/128/13'
+    elif type == 'Hypersmooth_OFF':
+        url = url + '/gp/gpControl/setting/135/0'
+    elif type == 'HiLight':
+        url = url + '/gp/gpControl/setting/153/1'
+    elif type == 'Horizon Lock OFF':
+        url = url + '/gp/gpControl/setting/165/0'
 
 
-def demoui():
-    dpg.create_context()
-    dpg.create_viewport(title='Custom Title', width=600, height=600)
+    try:
+        response = requests.get(url, timeout=10)  # タイムアウトを10秒に設定
+        if 200 <= response.status_code < 300:
+            print("Request was successful.")
+            # 応答内容を表示
+            print(response.text)
+        else:
+            print(f"Request failed with status code: {response.status_code}")
+    except requests.exceptions.RequestException as e:
+        print(f"Request failed: {e}")
 
-    demo.show_demo()
+'''
 
-    dpg.setup_dearpygui()
-    dpg.show_viewport()
-    dpg.start_dearpygui()
-    dpg.destroy_context()
 
 def get(work=0):
 
@@ -215,6 +323,7 @@ def get(work=0):
     e = check_url(url)
 
     print ('------',e)
+'''
 
 #get(0)
 '''    
@@ -230,4 +339,4 @@ for o in data.keys():
 
 #ui()
 
-demoui()
+#demoui()
