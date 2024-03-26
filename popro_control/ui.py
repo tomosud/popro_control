@@ -211,7 +211,7 @@ def add_button_files(parent):
                     print ('cre',sa)
 
                     dictn = dict(total_media_dict[on][onn])
-                    dictn = dictn['gopro'] = on
+                    dictn['gopro'] = on
 
                     kouho_dict[sa] = dictn
 
