@@ -198,21 +198,31 @@ def ret_all_media(url=testBaseurl):
                 # UTCでdatetimeオブジェクトを作成
                 utc_time = datetime.fromtimestamp(timestamp, tz=timezone.utc)
                 # 日本時間（JST）に変換
-                #jst_time = utc_time.astimezone(ZoneInfo("Asia/Tokyo"))
+                local_time = utc_time.astimezone(ZoneInfo("Asia/Tokyo"))
 
                 # システムのローカルタイムゾーンを使用してローカル時間に変換
-                local_time = utc_time.astimezone()
+                #local_time = utc_time.astimezone()
 
                 
                 #print("日本時間（JST）:", jst_time.strftime('%Y-%m-%d %H:%M:%S'))
 
                 localtime = local_time.strftime('%Y-%m-%d %H:%M:%S')
 
-                # 日本時間とローカル時間を文字列で表示
-                print ('\n---',"dir:",dir, "name:",on['n'],' : ', localtime)
+
 
                 on['localtime'] = localtime
                 on['dir'] = dir
+
+                #lengthほかも取得する
+                #http://172.20.195.51:8080/gp/gpMediaMetadata?p=100GOPRO/GX010015.MP4&t=videoinfo
+
+                infourl = url + '/gp/gpMediaMetadata?p=' + dir + '/' + on['n'] + '&t=videoinfo'
+
+                info = get_json_data(infourl)
+
+                #onに追加(update)
+                on.update(info)
+
 
                 #http://172.22.148.51:8080/videos/DCIM/100GOPRO/GX010001.MP4
                 on['dl'] = url + '/videos/DCIM/' + dir + '/' + on['n']
@@ -220,6 +230,9 @@ def ret_all_media(url=testBaseurl):
                 print(on['dl'])
 
                 data[timestamp] = on
+
+                # 日本時間とローカル時間を文字列で表示
+                print ('\n---',"dir:",dir, "name:",on['n'],' : (9時間ずれてる？)日本時間（JST）', localtime, ' *dur:',on['dur'],' sec')                
 
     return data
 
@@ -259,20 +272,20 @@ def set_capture_mode(url):
     print ('set_capture_mode',url)
     command_send(url,'beep_mute')
 
-    command_send(url,'1080p')
-    command_send(url,'60fps')
-    command_send(url,'Shutter_Auto')
-    command_send(url,'LOD_ON')
-    command_send(url,'Lens_Linear')
+    #command_send(url,'1080p')
+    #command_send(url,'60fps')
+    #command_send(url,'Shutter_Auto')
+    command_send(url,'LED_ON')
+    #command_send(url,'Lens_Linear')
     command_send(url,'Video_mode')
-    command_send(url,'Hypersmooth_OFF')
-    command_send(url,'Horizon Lock OFF')		
+    #command_send(url,'Hypersmooth_OFF')
+    #command_send(url,'Horizon Lock OFF')		
 
     #command_send(url,'beep')	
 
 def command_send(url,type):
 
-
+    #これらのコマンドは古そう　
     if type =='beep':
         url = url + '/gp/gpControl/setting/87/70'
     elif type == 'beep_mute':
@@ -283,7 +296,7 @@ def command_send(url,type):
         url = url + '/gp/gpControl/setting/3/5'
     elif type == 'Shutter_Auto':
         url = url + '/gp/gpControl/setting/19/0'
-    elif type == 'LOD_ON':
+    elif type == 'LED_ON':
         url = url + '/gp/gpControl/setting/91/2'
     elif type == 'Lens_Linear':
         url = url + '/gp/gpControl/setting/121/4'
@@ -295,6 +308,9 @@ def command_send(url,type):
         url = url + '/gp/gpControl/setting/153/1'
     elif type == 'Horizon Lock OFF':
         url = url + '/gp/gpControl/setting/165/0'
+
+    #
+    
 
 
     try:
@@ -336,8 +352,6 @@ def record(url,on_off):
         print(f"Request failed: {e}")
 
 '''
-
-
 def get(work=0):
 
     url = "http://172.20.195.51:8080/gp/gpMediaList"
