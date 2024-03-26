@@ -1,5 +1,5 @@
 import requests
-
+import os
 import json
 from datetime import datetime, timezone, timedelta
 from zoneinfo import ZoneInfo  # Python 3.9以降で利用可能
@@ -13,6 +13,40 @@ setting_dict = {'key1': 'value1', 'key2': 'value2'}
 testurl = 'http://172.20.195.51:8080/gp/gpMediaList'
 #以下をGoProの個体認証にも使う
 testBaseurl = 'http://172.20.195.51:8080'
+
+
+
+def download_file(url, file_name, folder_path='D:/GoPro'):
+    # 指定されたフォルダが存在しない場合は作成
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+    
+    # ファイルをダウンロードして保存するフルパスを構築
+    file_path = os.path.join(folder_path, file_name)
+    
+    print ('try file_path',file_path)
+    # URLからファイルをダウンロード
+    response = requests.get(url)
+    
+    # HTTPリクエストが成功したか確認
+    if response.status_code == 200:
+        # ファイルを書き込む
+        with open(file_path, 'wb') as file:
+            file.write(response.content)
+        print(f'File has been downloaded and saved to {file_path}')
+    else:
+        print('Failed to download the file. Please check the URL or your internet connection.')
+
+
+'''
+# 使用例
+url = 'http://172.20.195.51:8080/videos/DCIM/100GOPRO/GX010001.MP4'
+folder_path = '/desired/path/to/save'
+file_name = 'GX010001.MP4'
+
+'''
+
+
 
 def check_urls(url,timeout=5):
 
@@ -193,6 +227,8 @@ def ret_all_media(url=testBaseurl):
 
                 # Unixタイムスタンプ
                 timestamp = int(on['cre'])
+
+                timestamp = timestamp - 32400  # 9時間分の秒数を引く
 
                 #print ('unixtime',timestamp)
                 # UTCでdatetimeオブジェクトを作成

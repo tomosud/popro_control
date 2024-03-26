@@ -84,7 +84,19 @@ def copy_files(sender, app_data, user_data):
 
     m = temp_files_dict[user_data]
 
-    print ('media--\n',m)
+    #print ('media--\n',m)
+    #m is list
+
+    for o in m:
+        print ('Download-----',o['dl'])
+
+        url = o['dl']
+
+        file_name = url.split('/')[-1]
+
+        #cm.download_file(url=url, file_name=file_name)
+
+        print ('-----Done!')
 
 
 def send_map(sender, app_data, user_data):
@@ -253,11 +265,12 @@ def add_button_files(parent):
                 #print ('----s',s)
                 mp4s.append(s)
 
-            label = total_media_dict_main[o]['localtime']
-            temp_files_dict[label] = mp4s
+            label = total_media_dict_main[o]['localtime'] + ' : ' + total_media_dict_main[o]['dur'] + 'sec'
+
+            temp_files_dict[total_media_dict_main[o]['localtime']] = mp4s
 
             
-            dpg.add_button(label=label,parent=parent,callback=copy_files,user_data=label,width=200, height=15)
+            dpg.add_button(label=label,parent=parent,callback=copy_files,user_data=total_media_dict_main[o]['localtime'],width=200, height=15)
 
 
 
@@ -273,8 +286,9 @@ def main():
     dpg.create_context()
     dpg.create_viewport()
     dpg.setup_dearpygui()
+    #width=1200, height=1000,no_close=True,pos=(0,0)
 
-    with dpg.window(label="Example Window"):
+    with dpg.window(label="GoPro File explorer",width=600, height=800,no_close=True,pos=(0,0)):
         dpg.add_text("GoPro File explorer")
         #dpg.add_button(label="Save", callback=save_callback)
         #dpg.add_input_text(label="string")
