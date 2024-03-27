@@ -16,15 +16,17 @@ testBaseurl = 'http://172.20.195.51:8080'
 
 
 
-def download_file(url, file_name, folder_path='D:/GoPro'):
+def download_file(url, file_name, folder_path):
     # 指定されたフォルダが存在しない場合は作成
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
     
     # ファイルをダウンロードして保存するフルパスを構築
-    file_path = os.path.join(folder_path, file_name)
+    file_path = os.path.join(folder_path, file_name).replace('\\', '/')
     
     print ('try file_path',file_path)
+
+
     # URLからファイルをダウンロード
     response = requests.get(url)
     
@@ -33,6 +35,7 @@ def download_file(url, file_name, folder_path='D:/GoPro'):
         # ファイルを書き込む
         with open(file_path, 'wb') as file:
             file.write(response.content)
+
         print(f'File has been downloaded and saved to {file_path}')
     else:
         print('Failed to download the file. Please check the URL or your internet connection.')

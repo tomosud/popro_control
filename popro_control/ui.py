@@ -88,13 +88,17 @@ def copy_files(sender, app_data, user_data):
     #m is list
 
     for o in m:
-        print ('Download-----',o['dl'])
+
+        folder_path = 'D:/GoPro/' + user_data.replace(' ','_').replace(':','_').replace('-','_')
+
+        print ('Download-----',o['dl'],folder_path)
 
         url = o['dl']
 
         file_name = url.split('/')[-1]
 
-        #cm.download_file(url=url, file_name=file_name)
+        cm.download_file(url=url, file_name=file_name,folder_path=folder_path )
+
 
         print ('-----Done!')
 
