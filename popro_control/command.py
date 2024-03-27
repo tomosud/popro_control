@@ -299,7 +299,6 @@ def check_url_one(url):
         # リクエストに関するエラーの処理
         return False, str(e)
     
-
 def set_to_bacic_capture_mode():
 
     for o in gopro_dict.keys():
@@ -349,8 +348,6 @@ def command_send(url,type):
         url = url + '/gp/gpControl/setting/165/0'
 
     #
-    
-
 
     try:
         response = requests.get(url, timeout=10)  # タイムアウトを10秒に設定
