@@ -5,7 +5,7 @@ import os
 
 async def download_one(url, save_path):
     start = time.time()
-    chunk_size = 10
+    chunk_size = 4096
     filename = url.split('/')[-1]
 
     print ('------url',url)
@@ -24,6 +24,7 @@ async def download_one(url, save_path):
                 with open(save_path, 'wb') as fd:
                     while True:
                         chunk = await resp.content.read(chunk_size)
+                        #print ('chunk')
                         if not chunk:
                             break
                         fd.write(chunk)

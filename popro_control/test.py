@@ -12,6 +12,9 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 #r = cm.ret_gopros()
 #print ('exsist',len(r.keys()),r)
 
+
+'''
+
 ui.main()
 
 '''
@@ -25,4 +28,3 @@ para_http.download_make_dict_and_do(urls=urls)
 
 print ('done')
 
-'''
