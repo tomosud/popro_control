@@ -9,5 +9,6 @@ setup(
         'dearpygui==1.11.1',  # dearpyguiのバージョンを1.11.1に指定
         'tzdata',  # tzdataを追加 タイムゾーンの設定に使用
         'aiohttp',  # aiohttpを追加
+        'aiofiles',  # aiofilesを追加
     ]
 )
