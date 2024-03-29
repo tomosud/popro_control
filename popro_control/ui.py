@@ -3,6 +3,7 @@
 import dearpygui.dearpygui as dpg
 import dearpygui.demo as demo
 
+from urllib.parse import urlparse
 import command as cm
 import uuid
 
@@ -89,18 +90,35 @@ def copy_files(sender, app_data, user_data):
 
     for o in m:
 
-        folder_path = 'D:/GoPro/' + user_data.replace(' ','_').replace(':','_').replace('-','_')
+        #print('o',o)
+
+        #'gopro': 'http://172.20.195.51:8080' #これを求めたい
+        #dl = http://172.22.148.51:8080/videos/DCIM/100GOPRO/GX010004.MP4'}
+
+        # URLの解析
+        parsed_url = urlparse(o['dl'])
+        # スキーム、ネットロケーション（ホストとポート）を結合して接続先のURLを生成
+        base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
+        
+        #goproの名前？
+        gopro_name = gopro_dict[base_url]['name'].replace('_','')
+        
+
+        folder_path = 'C:/GoPro/' + user_data.replace(' ','_').replace(':','_').replace('-','_')
 
         print ('Download-----',o['dl'],folder_path)
 
         url = o['dl']
 
-        file_name = url.split('/')[-1]
+        file_name = gopro_name + '_' + url.split('/')[-1]
+
+        print ('-----',file_name)
 
         cm.download_file(url=url, file_name=file_name,folder_path=folder_path )
 
-
         print ('-----Done!')
+
+    print ('-----Finish!',user_data)
 
 
 def send_map(sender, app_data, user_data):
@@ -115,6 +133,8 @@ def send_map(sender, app_data, user_data):
     #m = cm.ret_all_media(url=user_data)
 
     #print ('media',m)
+    print ('gopro_dict')
+    print (gopro_dict)
 
 
 def add_button_gopros(parent):
