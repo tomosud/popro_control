@@ -7,6 +7,8 @@ from urllib.parse import urlparse
 import command as cm
 import uuid
 
+folder_path_base = 'C:/GoPro/'
+
 gopro_dict = {}
 temp_popro_ui_dict = {}
 
@@ -77,6 +79,35 @@ def add_ui_test():
 def beep():
     print('beep')
 
+#再利用するので関数化。file buttonのDl情報を取得できる関数
+def ret_dlpath_from_dict(dictn):
+
+    ret = {}
+
+    # URLの解析
+    parsed_url = urlparse(dictn['dl'])
+    # スキーム、ネットロケーション（ホストとポート）を結合して接続先のURLを生成
+    base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
+
+    #goproの名前？
+    gopro_name = gopro_dict[base_url]['name'].replace('_','')
+
+    folder_path = folder_path_base + user_data.replace(' ','_').replace(':','_').replace('-','_')
+
+    print ('Download-----',dictn['dl'],folder_path)
+
+    url = o['dl']
+
+    file_name = gopro_name + '_' + url.split('/')[-1]
+
+    print ('-----',file_name)
+
+    ret['url'] = url
+    ret['file_name'] = file_name
+    ret['folder_path'] = folder_path
+
+    return ret
+
 def copy_files(sender, app_data, user_data):
 
     print(f"sender is: {sender}")
@@ -94,6 +125,8 @@ def copy_files(sender, app_data, user_data):
 
         #'gopro': 'http://172.20.195.51:8080' #これを求めたい
         #dl = http://172.22.148.51:8080/videos/DCIM/100GOPRO/GX010004.MP4'}
+        '''
+        
 
         # URLの解析
         parsed_url = urlparse(o['dl'])
@@ -103,18 +136,18 @@ def copy_files(sender, app_data, user_data):
         #goproの名前？
         gopro_name = gopro_dict[base_url]['name'].replace('_','')
         
-
-        folder_path = 'C:/GoPro/' + user_data.replace(' ','_').replace(':','_').replace('-','_')
+        folder_path = folder_path_base + user_data.replace(' ','_').replace(':','_').replace('-','_')
 
         print ('Download-----',o['dl'],folder_path)
 
         url = o['dl']
-
         file_name = gopro_name + '_' + url.split('/')[-1]
-
         print ('-----',file_name)
+        '''
 
-        cm.download_file(url=url, file_name=file_name,folder_path=folder_path )
+        rdictn = ret_dlpath_from_dict(o)
+
+        cm.download_file(url=rdictn['url'], file_name=rdictn['file_name'],folder_path=rdictn['folder_path'])
 
         print ('-----Done!')
 
@@ -162,6 +195,42 @@ def add_button_gopros(parent):
         dpg.add_button(label=label,parent=parent,tag=temp_popro_ui_dict['gopro_single_buttons'][-1],callback=send_map,user_data=o,width=75, height=100)
 
 
+def reload_file():
+    
+    print ('reload_file')
+    
+    #temp_popro_ui_dict['gopro_file_buttons_parant'] = parant
+
+    if 'gopro_file_buttons_parent' in temp_popro_ui_dict.keys():
+        pass
+    else:
+        print ('no entry gopro_file_buttons_parent')
+        return 
+
+
+    children = dpg.get_item_children(temp_popro_ui_dict['gopro_file_buttons_parent'])
+
+    print ('----children',children)
+    #----children {0: [], 1: [38, 39, 40, 41], 2: [], 3: []}
+    
+    # 子アイテムの中で指定された名前を持つボタンを削除
+    for child_id in children[1]:
+        #if dpg.get_item_label(child_id) == button_name_to_delete:
+        dpg.delete_item(child_id)
+        print ('delete',child_id)
+    
+    #入れ直し
+    add_button_files(temp_popro_ui_dict['gopro_file_buttons_parent'])
+
+def button_file_color_update():
+
+    for o in temp_popro_ui_dict['gopro_file_buttons'].keys():
+        #o is button's ui id
+        pass
+
+
+
+
 #撮影したfileのpairを見つけて取得ボタンとして表示
 def add_button_files(parent):
 
@@ -176,8 +245,8 @@ def add_button_files(parent):
     temp_files_dict = {}
 
     ####
-
-    temp_popro_ui_dict['gopro_file_buttons'] = []
+    #あとでbuttonにアクセスして色変えたりするため
+    temp_popro_ui_dict['gopro_file_buttons'] = {}
 
     #print ('add_button_gopros')
 
@@ -294,8 +363,12 @@ def add_button_files(parent):
             temp_files_dict[total_media_dict_main[o]['localtime']] = mp4s
 
             
-            dpg.add_button(label=label,parent=parent,callback=copy_files,user_data=total_media_dict_main[o]['localtime'],width=200, height=15)
+            id = dpg.add_button(label=label,parent=parent,callback=copy_files,user_data=total_media_dict_main[o]['localtime'],width=200, height=15)
 
+            #あとで色変えとかに使う
+            temp_popro_ui_dict['gopro_file_buttons'][id] = total_media_dict_main[o]['localtime']
+
+    temp_popro_ui_dict['gopro_file_buttons_parent'] = parent
 
 
 def add_button_command(parant,command):
@@ -321,6 +394,7 @@ def main():
 
         with dpg.menu_bar():
             dpg.add_menu(label="Menu Options")
+            
 
         with dpg.child_window(autosize_x=True, height=100):
             with dpg.group(horizontal=True):
@@ -336,6 +410,9 @@ def main():
                 dpg.add_button(label="Header 1", width=75, height=75)
                 dpg.add_button(label="Header 2", width=75, height=75)    
                 '''
+        with dpg.child_window(autosize_x=True,width=500, height=50):
+            with dpg.group(horizontal=True, width=0):
+                dpg.add_button(label='Relaod Files',callback=reload_file,width=500, height=20)
 
         with dpg.child_window(autosize_x=True,width=500, height=500):
             with dpg.group(horizontal=True, width=0):
