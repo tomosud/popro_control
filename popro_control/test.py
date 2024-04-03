@@ -6,6 +6,8 @@ import command as cm
 import ui as ui
 import para_http
 
+import dearpygui.demo as demo
+
 import requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -14,6 +16,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
 ui.main()
+
 
 '''
 

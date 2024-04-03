@@ -1,11 +1,12 @@
 
 
 import dearpygui.dearpygui as dpg
-import dearpygui.demo as demo
+
 
 from urllib.parse import urlparse
 import command as cm
 import uuid
+import os
 
 folder_path_base = 'C:/GoPro/'
 
@@ -80,7 +81,8 @@ def beep():
     print('beep')
 
 #再利用するので関数化。file buttonのDl情報を取得できる関数
-def ret_dlpath_from_dict(dictn):
+#user_dataは代表のtime stamp/ dl pathに使う
+def ret_dlpath_from_dict(dictn,time_stamp):
 
     ret = {}
 
@@ -92,11 +94,11 @@ def ret_dlpath_from_dict(dictn):
     #goproの名前？
     gopro_name = gopro_dict[base_url]['name'].replace('_','')
 
-    folder_path = folder_path_base + user_data.replace(' ','_').replace(':','_').replace('-','_')
+    folder_path = folder_path_base + time_stamp.replace(' ','_').replace(':','_').replace('-','_')
 
     print ('Download-----',dictn['dl'],folder_path)
 
-    url = o['dl']
+    url = dictn['dl']
 
     file_name = gopro_name + '_' + url.split('/')[-1]
 
@@ -145,13 +147,14 @@ def copy_files(sender, app_data, user_data):
         print ('-----',file_name)
         '''
 
-        rdictn = ret_dlpath_from_dict(o)
+        rdictn = ret_dlpath_from_dict(o,user_data)
 
         cm.download_file(url=rdictn['url'], file_name=rdictn['file_name'],folder_path=rdictn['folder_path'])
 
         print ('-----Done!')
 
     print ('-----Finish!',user_data)
+    button_file_color_update()
 
 
 def send_map(sender, app_data, user_data):
@@ -224,10 +227,50 @@ def reload_file():
 
 def button_file_color_update():
 
+
+    # テーマを作成
+    with dpg.theme() as orange_theme:
+        with dpg.theme_component(dpg.mvButton):
+            # ボタンの背景色を設定（ここでは赤色）
+            dpg.add_theme_color(dpg.mvThemeCol_Button, (128, 64, 0, 255))
+
+    with dpg.theme() as blue_theme:
+        with dpg.theme_component(dpg.mvButton):
+            # ボタンの背景色を設定（ここでは赤色）
+            dpg.add_theme_color(dpg.mvThemeCol_Button, (32, 128, 32, 255))
+
+
     for o in temp_popro_ui_dict['gopro_file_buttons'].keys():
         #o is button's ui id
-        pass
 
+        files = []
+        exsist = 0
+        #gopro台数分のfileのdict
+        m = temp_files_dict[temp_popro_ui_dict['gopro_file_buttons'][o]]
+
+        # IDからuser_dataを取得 timestamp
+        user_data = dpg.get_item_user_data(o)
+
+        for on in m:
+
+            rdictn = ret_dlpath_from_dict(on,user_data)
+            
+            file = rdictn['folder_path'] + '/' + rdictn['file_name']
+
+            print ('file-----',file)
+
+            files.append(file)
+
+            if os.path.exists(file):
+                exsist += 1
+        #filesはすべて存在してるか？
+                
+
+        
+        if len(files) == exsist:
+            dpg.bind_item_theme(o, blue_theme)
+        else:
+            dpg.bind_item_theme(o, orange_theme)
 
 
 
@@ -369,6 +412,8 @@ def add_button_files(parent):
             temp_popro_ui_dict['gopro_file_buttons'][id] = total_media_dict_main[o]['localtime']
 
     temp_popro_ui_dict['gopro_file_buttons_parent'] = parent
+
+    button_file_color_update()
 
 
 def add_button_command(parant,command):
