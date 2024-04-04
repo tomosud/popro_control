@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 import command as cm
 import uuid
 import os
+import webbrowser
 
 import para_http as ph
 
@@ -385,8 +386,6 @@ def add_button_files(parent):
                 now_cre = total_media_dict[on][onn]['cre']
                 #now_dur = total_media_dict[on][onn]['dur']
 
-
-
                 #print (base_cre,':',now_cre,total_media_dict[on][onn]['dl'])
                 sa = abs(int(base_cre) - int(now_cre))
 
@@ -450,8 +449,21 @@ def add_button_files(parent):
                 text_defo = 'take_' + sept[3] + '-' + sept[4] + '_' + sept[5]
 
                 #rename　書き換えたら辞書も書き換える
-                tex_id = dpg.add_input_text(label="rename:",user_data=total_media_dict_main[o]['localtime'], default_value=text_defo,callback=rename_setting)
+                tex_id = dpg.add_input_text(label=":take",user_data=total_media_dict_main[o]['localtime'], default_value=text_defo,callback=rename_setting,width=100, height=15)
 
+                kz = 1
+
+                for onn in mp4s:
+
+                    #openurl = 'http://172.20.195.51:8080/videos/DCIM/100GOPRO/GX010026.MP4'
+
+                    #print ('--mp4s---onn',onn)
+
+                    openurl = onn['dl']
+
+                    dpg.add_button(label=str(kz),callback=open_url,user_data=openurl,width=20, height=15)
+
+                    kz += 1
 
                 #あとで色変えとかに使う
                 temp_popro_ui_dict['gopro_file_buttons'][id] = total_media_dict_main[o]['localtime']
@@ -465,6 +477,14 @@ def add_button_files(parent):
     temp_popro_ui_dict['gopro_file_buttons_parent'] = parent
 
     button_file_color_update()
+
+def open_url(sender, app_data, user_data): #mp4のurlを開く
+
+    #import webbrowser
+
+    url = user_data
+
+    webbrowser.open(url)
 
 
 def rename_setting(sender, app_data, user_data):
