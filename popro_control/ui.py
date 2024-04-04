@@ -174,7 +174,9 @@ def copy_files(sender, app_data, user_data):
 
     takename = dpg.get_value(tex_id)
 
-    cm.copy_to_take_name(appnd_savepath,takename)
+    d = cm.copy_to_take_name(appnd_savepath,takename)
+
+    cm.write_list_to_file([takename],d + 'take_names.txt')
 
     button_file_color_update()
 

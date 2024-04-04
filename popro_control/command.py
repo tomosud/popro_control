@@ -451,7 +451,22 @@ def copy_to_take_name(dir,takename):
 
         kz = kz + 1
 
+    return newpath
 
+def write_list_to_file(string_list, filename):
+
+
+
+    """
+    指定されたリストの各要素を改行区切りでファイルに書き出す。
+
+    Parameters:
+    string_list (list): 文字列のリスト。
+    filename (str): 書き出すファイルの名前。
+    """
+    with open(filename, 'w', encoding='utf-8') as file:
+        for item in string_list:
+            file.write(f"{item}\n")
 
 
 
