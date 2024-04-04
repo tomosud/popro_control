@@ -236,7 +236,10 @@ def ret_all_media_palla(urls):
             except Exception as exc:
                 print(f'URL {url} generated an exception: {exc}')
                 results[url] = None  # エラーが発生した場合はNoneを割り当てる
-                
+
+    #keyをsort
+    results = dict(sorted(results.items()))     
+
     return results
 
 
@@ -308,12 +311,12 @@ def ret_all_media(url=testBaseurl):
                 #http://172.22.148.51:8080/videos/DCIM/100GOPRO/GX010001.MP4
                 on['dl'] = url + '/videos/DCIM/' + dir + '/' + on['n']
 
-                print(on['dl'])
+                #print(on['dl'])
 
                 data[timestamp] = on
 
                 # 日本時間とローカル時間を文字列で表示
-                print ('\n---',"dir:",dir, "name:",on['n'],' : (9時間ずれてる？)日本時間（JST）', localtime, ' *dur:',on['dur'],' sec')                
+                #print ('\n---',"dir:",dir, "name:",on['n'],' : (9時間ずれてる？)日本時間（JST）', localtime, ' *dur:',on['dur'],' sec')                
 
     return data
 

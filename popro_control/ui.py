@@ -121,7 +121,7 @@ def ret_dlpath_from_dict(dictn,time_stamp):
 
     file_name = gopro_name + '_' + url.split('/')[-1]
 
-    print ('-----',file_name)
+    #print ('-----',file_name)
 
     ret['url'] = url
     ret['file_name'] = file_name
@@ -195,8 +195,8 @@ def send_map(sender, app_data, user_data):
     #m = cm.ret_all_media(url=user_data)
 
     #print ('media',m)
-    print ('gopro_dict')
-    print (gopro_dict)
+    #print ('gopro_dict')
+    #print (gopro_dict)
 
 def add_button_gopros(parent):
 
@@ -211,12 +211,12 @@ def add_button_gopros(parent):
 
     for o in gopro_dict.keys():
 
-        print ('gopro_single_buttons',o)
+        #print ('gopro_single_buttons',o)
 
         tag = ret_uitag(o,gopro_dict[o]['name'])
         temp_popro_ui_dict['gopro_single_buttons'].append(tag)
 
-        print ('tag---',tag)
+        #print ('tag---',tag)
 
         label = gopro_dict[o]['name'].replace(' ','\n')
 
@@ -237,7 +237,7 @@ def reload_file():
 
     children = dpg.get_item_children(temp_popro_ui_dict['gopro_file_buttons_parent'])
 
-    print ('----children',children)
+    #print ('----children',children)
     #----children {0: [], 1: [38, 39, 40, 41], 2: [], 3: []}
     
     # 子アイテムの中で指定された名前を持つitemを削除
@@ -305,7 +305,7 @@ def button_file_color_update():
 
         texid = temp_popro_ui_dict['gopro_file_buttons_textfield'][o]
 
-        print ('fldername is ',fldername)
+        #print ('fldername is ',fldername)
 
         if fldername in global_file_rename_dict.keys():
             dpg.set_value(texid, global_file_rename_dict[fldername])
@@ -314,7 +314,7 @@ def button_file_color_update():
 #撮影したfileのpairを見つけて取得ボタンとして表示
 def add_button_files(parent):
 
-    print ('\n\n\n■--------add_button_files')
+    #print ('\n\n\n■--------add_button_files')
 
     global temp_popro_ui_dict
     global gopro_dict
