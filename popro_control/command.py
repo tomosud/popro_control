@@ -4,6 +4,10 @@ import json
 from datetime import datetime, timezone, timedelta
 from zoneinfo import ZoneInfo  # Python 3.9以降で利用可能
 
+import shutil
+
+import glob
+
 # 並列処理用
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -13,7 +17,6 @@ setting_dict = {'key1': 'value1', 'key2': 'value2'}
 testurl = 'http://172.20.195.51:8080/gp/gpMediaList'
 #以下をGoProの個体認証にも使う
 testBaseurl = 'http://172.20.195.51:8080'
-
 
 
 def download_file(url, file_name, folder_path):
@@ -152,6 +155,10 @@ def ret_gopros(connect=True):
         gopro_dict = newret
 
         set_to_bacic_capture_mode()
+
+
+        #keyをsort
+        newret = dict(sorted(newret.items()))
 
         return newret
     
@@ -386,6 +393,68 @@ def record(url,on_off):
             print(f"Request failed with status code: {response.status_code}")
     except requests.exceptions.RequestException as e:
         print(f"Request failed: {e}")
+
+'''
+dirを指定して、そのdirのmp4をすべて取得する
+C:\GoPro\2024_04_03\2024_04_03_12_35_13\
+
+例
+"C:\GoPro\2024_04_03\2024_04_03_12_35_13\HERO12 Black05_GX010023.MP4"
+"C:\GoPro\2024_04_03\2024_04_03_12_35_13\HERO12 Black01_GX010012.MP4"
+"C:\GoPro\2024_04_03\2024_04_03_12_35_13\HERO12 Black02_GX010013.MP4"
+"C:\GoPro\2024_04_03\2024_04_03_12_35_13\HERO12 Black03_GX010026.MP4"
+"C:\GoPro\2024_04_03\2024_04_03_12_35_13\HERO12 Black04_GX010012.MP4"
+
+上を以下のようにコピーする
+C:\GoPro\2024_04_03\{takename}\cam01_{takename}.mp4
+'''
+
+def copy_to_take_name(dir,takename):
+
+    dir = dir.replace('\\','/')
+
+    #一階層上のフォルダ名を取得
+    sep = dir.split('/')
+
+    newpath = '/'.join(sep[:-1]) + '/' + takename + '/'
+
+    #フォルダがなければ作成
+    if not os.path.exists(newpath):
+        os.makedirs(newpath)
+
+    #dirを指定して、そのdirのmp4をすべて取得する
+
+    print ('copy_to_take_name : dir',dir)
+
+    mp4s = glob.glob(dir + '/*.mp4', recursive=True)
+
+    print ('newpath',newpath,'mp4s',mp4s)
+
+    copydict = {}
+
+    kz = 1
+
+    for o in sorted(mp4s):
+
+        o = o.replace('\\','/')
+
+        #stringで二桁にする
+        kzstr = str(kz).zfill(2)
+
+        copyname = newpath + 'cam' + kzstr + '_' + takename + '.mp4'
+
+        copydict[o] = copyname
+
+        #file copy
+        print ('-------copy',kz,o,copyname)
+        shutil.copy2(o,copyname)
+
+        kz = kz + 1
+
+
+
+
+
 
 '''
 def get(work=0):

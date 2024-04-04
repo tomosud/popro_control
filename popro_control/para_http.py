@@ -3,6 +3,8 @@ import aiohttp
 import aiofiles
 import time
 import os
+#from aiofiles import open as aio_open
+
 
 async def download_one(session, url, save_path):
     start = time.time()
@@ -41,6 +43,10 @@ async def download_main(url_dict, appnd_savepath):
     msg = f'\n{count} files downloaded in {elapsed:.2f}s'
     print(msg)
 
+#ふつうはこれを使う
+def download_main_wrapper(url_dict, appnd_savepath):
+    asyncio.run(download_main(url_dict, appnd_savepath))
+
 def download_make_dict_and_do(urls=[], folder_path='C:/temp/DL'):
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
@@ -52,3 +58,6 @@ def download_make_dict_and_do(urls=[], folder_path='C:/temp/DL'):
         url_dict[o] = save_path
     
     asyncio.run(download_main(url_dict, folder_path))
+
+
+

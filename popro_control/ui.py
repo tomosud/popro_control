@@ -2,13 +2,16 @@
 
 import dearpygui.dearpygui as dpg
 
-
 from urllib.parse import urlparse
 import command as cm
 import uuid
 import os
 
+import para_http as ph
+
 folder_path_base = 'C:/GoPro/'
+
+global_ini = folder_path_base + 'Rename_Setting.ini'
 
 gopro_dict = {}
 temp_popro_ui_dict = {}
@@ -16,6 +19,10 @@ temp_popro_ui_dict = {}
 temp_files_dict = {}
 
 gopro_recording = False
+
+#各日付フォルダにfileのrenameの関連付けを保存するjsonと同期して使う
+global_file_rename_dict = {}
+
 
 def ret_uitag(name_str,memo):
 
@@ -29,12 +36,15 @@ def ret_uitag(name_str,memo):
 
 # command.py
 
+'''
+
 def print_this():
     print("Command function is called.")
     
     r = requests.get('https://www.yahoo.co.jp/')
     print(r.content)
 
+'''
 
 def recording():
     
@@ -84,6 +94,9 @@ def beep():
 #user_dataは代表のtime stamp/ dl pathに使う
 def ret_dlpath_from_dict(dictn,time_stamp):
 
+    #print ('ret_dlpath_from_dict',time_stamp,dictn)
+    #print ('\n')
+
     ret = {}
 
     # URLの解析
@@ -94,9 +107,14 @@ def ret_dlpath_from_dict(dictn,time_stamp):
     #goproの名前？
     gopro_name = gopro_dict[base_url]['name'].replace('_','')
 
-    folder_path = folder_path_base + time_stamp.replace(' ','_').replace(':','_').replace('-','_')
+    time_st = time_stamp.replace(' ','_').replace(':','_').replace('-','_')
+    day = time_st.split('_')[0] + '_' + time_st.split('_')[1] + '_' + time_st.split('_')[2]
 
-    print ('Download-----',dictn['dl'],folder_path)
+    #folder_path = folder_path_base + time_stamp.replace(' ','_').replace(':','_').replace('-','_')
+
+    folder_path = folder_path_base + '/' + day + '/' + time_st
+
+    #print ('Download-----',dictn['dl'],folder_path)
 
     url = dictn['dl']
 
@@ -112,7 +130,7 @@ def ret_dlpath_from_dict(dictn,time_stamp):
 
 def copy_files(sender, app_data, user_data):
 
-    print(f"sender is: {sender}")
+    print(f"sender is button id: {sender}")
     print(f"app_data is: {app_data}")
     print(f"user_data is url as: {user_data}")
 
@@ -121,41 +139,44 @@ def copy_files(sender, app_data, user_data):
     #print ('media--\n',m)
     #m is list
 
+    url_dict = {}
+
+    appnd_savepath = ''
+
     for o in m:
 
         #print('o',o)
 
         #'gopro': 'http://172.20.195.51:8080' #これを求めたい
         #dl = http://172.22.148.51:8080/videos/DCIM/100GOPRO/GX010004.MP4'}
-        '''
-        
-
-        # URLの解析
-        parsed_url = urlparse(o['dl'])
-        # スキーム、ネットロケーション（ホストとポート）を結合して接続先のURLを生成
-        base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
-        
-        #goproの名前？
-        gopro_name = gopro_dict[base_url]['name'].replace('_','')
-        
-        folder_path = folder_path_base + user_data.replace(' ','_').replace(':','_').replace('-','_')
-
-        print ('Download-----',o['dl'],folder_path)
-
-        url = o['dl']
-        file_name = gopro_name + '_' + url.split('/')[-1]
-        print ('-----',file_name)
-        '''
+     
 
         rdictn = ret_dlpath_from_dict(o,user_data)
 
-        cm.download_file(url=rdictn['url'], file_name=rdictn['file_name'],folder_path=rdictn['folder_path'])
+        #cm.download_file(url=rdictn['url'], file_name=rdictn['file_name'],folder_path=rdictn['folder_path'])
 
-        print ('-----Done!')
+        #print ('-----Done!')
+        appnd_savepath=rdictn['folder_path']
+        url_dict[rdictn['url']] = rdictn['file_name']
+
+    if not os.path.exists(appnd_savepath):
+        os.makedirs(appnd_savepath)
+
+    ph.download_main_wrapper(url_dict=url_dict,appnd_savepath=appnd_savepath)
 
     print ('-----Finish!',user_data)
-    button_file_color_update()
 
+    #takeの名前でcopy
+    #uuid = str(uuid.uuid4())
+
+    #button idからtext idを取得
+    tex_id = temp_popro_ui_dict['gopro_file_buttons_textfield'][sender]
+
+    takename = dpg.get_value(tex_id)
+
+    cm.copy_to_take_name(appnd_savepath,takename)
+
+    button_file_color_update()
 
 def send_map(sender, app_data, user_data):
 
@@ -171,7 +192,6 @@ def send_map(sender, app_data, user_data):
     #print ('media',m)
     print ('gopro_dict')
     print (gopro_dict)
-
 
 def add_button_gopros(parent):
 
@@ -210,13 +230,12 @@ def reload_file():
         print ('no entry gopro_file_buttons_parent')
         return 
 
-
     children = dpg.get_item_children(temp_popro_ui_dict['gopro_file_buttons_parent'])
 
     print ('----children',children)
     #----children {0: [], 1: [38, 39, 40, 41], 2: [], 3: []}
     
-    # 子アイテムの中で指定された名前を持つボタンを削除
+    # 子アイテムの中で指定された名前を持つitemを削除
     for child_id in children[1]:
         #if dpg.get_item_label(child_id) == button_name_to_delete:
         dpg.delete_item(child_id)
@@ -227,6 +246,13 @@ def reload_file():
 
 def button_file_color_update():
 
+    global temp_popro_ui_dict
+
+    global global_file_rename_dict
+
+    global_file_rename_dict = cm.load_settings(file_name=global_ini)
+
+    #存在によって色を変える
 
     # テーマを作成
     with dpg.theme() as orange_theme:
@@ -237,8 +263,7 @@ def button_file_color_update():
     with dpg.theme() as blue_theme:
         with dpg.theme_component(dpg.mvButton):
             # ボタンの背景色を設定（ここでは赤色）
-            dpg.add_theme_color(dpg.mvThemeCol_Button, (32, 128, 32, 255))
-
+            dpg.add_theme_color(dpg.mvThemeCol_Button, (32, 32, 32, 255))
 
     for o in temp_popro_ui_dict['gopro_file_buttons'].keys():
         #o is button's ui id
@@ -251,13 +276,15 @@ def button_file_color_update():
         # IDからuser_dataを取得 timestamp
         user_data = dpg.get_item_user_data(o)
 
+        fldername = ret_dlpath_from_dict(m[0],user_data)['folder_path'].split('/')[-1]
+
         for on in m:
 
             rdictn = ret_dlpath_from_dict(on,user_data)
             
             file = rdictn['folder_path'] + '/' + rdictn['file_name']
 
-            print ('file-----',file)
+            #print ('rdictn-----',rdictn)
 
             files.append(file)
 
@@ -266,17 +293,21 @@ def button_file_color_update():
         #filesはすべて存在してるか？
                 
 
-        
         if len(files) == exsist:
             dpg.bind_item_theme(o, blue_theme)
         else:
             dpg.bind_item_theme(o, orange_theme)
 
+        texid = temp_popro_ui_dict['gopro_file_buttons_textfield'][o]
+
+        print ('fldername is ',fldername)
+
+        if fldername in global_file_rename_dict.keys():
+            dpg.set_value(texid, global_file_rename_dict[fldername])
 
 
 #撮影したfileのpairを見つけて取得ボタンとして表示
 def add_button_files(parent):
-
 
     print ('\n\n\n■--------add_button_files')
 
@@ -290,6 +321,9 @@ def add_button_files(parent):
     ####
     #あとでbuttonにアクセスして色変えたりするため
     temp_popro_ui_dict['gopro_file_buttons'] = {}
+
+    #あとでbuttonにアクセスして色変えたりするため
+    temp_popro_ui_dict['gopro_file_buttons_textfield'] = {} 
 
     #print ('add_button_gopros')
 
@@ -321,7 +355,6 @@ def add_button_files(parent):
 
     #invertするわ
     
-
     for o in sorted(list(total_media_dict_main.keys()),reverse=True):
 
         base_cre = total_media_dict_main[o]['cre']
@@ -336,7 +369,7 @@ def add_button_files(parent):
         for on in total_media_dict.keys():
 
             #http://172.20.195.51:8080
-            print ('total_media_dict',on)
+            #print ('total_media_dict',on)
 
             kouho_dict = {}
 
@@ -352,7 +385,7 @@ def add_button_files(parent):
 
 
 
-                print (base_cre,':',now_cre,total_media_dict[on][onn]['dl'])
+                #print (base_cre,':',now_cre,total_media_dict[on][onn]['dl'])
                 sa = abs(int(base_cre) - int(now_cre))
 
                 if sa <= cre_compi:
@@ -366,9 +399,9 @@ def add_button_files(parent):
                 ###'cre': '1710861484' が最も近くて、かつ２以内のもの、かつ、'dur'の差が5以内のものを取得
                 #両方が成り立つものが二つ以上はないはず
         
-            print ('\n\n■---kouho find----',len(kouho_dict.keys()))
+            #print ('\n\n■---kouho find----',len(kouho_dict.keys()))
 
-            print ('kouho_dict',kouho_dict)
+            #print ('kouho_dict',kouho_dict)
 
             if len(kouho_dict.keys()) > 0:
 
@@ -376,21 +409,21 @@ def add_button_files(parent):
 
                 u = dict(kouho_dict[sorted(list(kouho_dict.keys()))[0]])
                         
-                print ('---u↓\n',u)        
-                print ('kouho is',u['dur'])
+                #print ('---u↓\n',u)        
+                #print ('kouho is',u['dur'])
 
                 sa = abs(int(base_dur) - int(u['dur']))
 
-                print ('***---sa as',sa)
+                #print ('***---sa as',sa)
 
                 if sa <= dur_compi:
-                    print ('dur as ',sa)
+                    #print ('dur as ',sa)
 
                     saiyo_list.append(u)
 
 
         ####
-        print ('\n\n-----kokode______saiyo_list',saiyo_list)
+        #print ('\n\n-----kokode______saiyo_list',saiyo_list)
 
 
         if len(saiyo_list) == lengopro:
@@ -405,15 +438,62 @@ def add_button_files(parent):
 
             temp_files_dict[total_media_dict_main[o]['localtime']] = mp4s
 
+            with dpg.group(horizontal=True,parent=parent):
             
-            id = dpg.add_button(label=label,parent=parent,callback=copy_files,user_data=total_media_dict_main[o]['localtime'],width=200, height=15)
 
-            #あとで色変えとかに使う
-            temp_popro_ui_dict['gopro_file_buttons'][id] = total_media_dict_main[o]['localtime']
+                id = dpg.add_button(label=label,callback=copy_files,user_data=total_media_dict_main[o]['localtime'],width=200, height=15)
+
+                #2024_04_03_21_16_09 時間を抽出 total_media_dict_main[o]['localtime']
+                sept = (total_media_dict_main[o]['localtime'].replace(' ','_').replace(':','_').replace('-','_')).split('_')
+                text_defo = 'take_' + sept[3] + '-' + sept[4] + '_' + sept[5]
+
+                #rename　書き換えたら辞書も書き換える
+                tex_id = dpg.add_input_text(label="rename:",user_data=total_media_dict_main[o]['localtime'], default_value=text_defo,callback=rename_setting)
+
+
+                #あとで色変えとかに使う
+                temp_popro_ui_dict['gopro_file_buttons'][id] = total_media_dict_main[o]['localtime']
+
+                #temp_popro_ui_dict['gopro_file_buttons_textfield']['tex_id'] = id
+
+                temp_popro_ui_dict['gopro_file_buttons_textfield'][id] = tex_id
+
+
 
     temp_popro_ui_dict['gopro_file_buttons_parent'] = parent
 
     button_file_color_update()
+
+
+def rename_setting(sender, app_data, user_data):
+
+    print(f"rename_setting :: sender is: {sender}")
+    print(f"app_data is: {app_data}")
+    print(f"user_data is url as: {user_data}")
+
+    #print ('rename_setting',user_data)
+
+    #global_file_rename_dict
+
+    global global_file_rename_dict
+
+    setting_dict = dict(global_file_rename_dict)
+
+
+    timestamp_underbar = user_data.replace(' ','_').replace(':','_').replace('-','_')
+
+    setting_dict[timestamp_underbar] = app_data
+
+    global_file_rename_dict = dict(setting_dict)
+
+
+    #global_file_rename_dict[user_data] = app_data
+
+    #print ('global_file_rename_dict',global_file_rename_dict)
+
+    #print ('rename_setting',app
+
+    cm.save_settings(setting_dict, file_name=global_ini)
 
 
 def add_button_command(parant,command):
@@ -471,6 +551,7 @@ def main():
     dpg.start_dearpygui()
     dpg.destroy_context()
 
+'''
 
 def demoui():
     dpg.create_context()
@@ -482,4 +563,4 @@ def demoui():
     dpg.show_viewport()
     dpg.start_dearpygui()
     dpg.destroy_context()
-
+'''
