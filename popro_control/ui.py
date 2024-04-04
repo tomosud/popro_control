@@ -528,11 +528,19 @@ def main():
     gopro_dict = cm.ret_gopros()
 
     dpg.create_context()
-    dpg.create_viewport()
+    # ビューポートのサイズを設定
+    dpg.create_viewport(title="GoPro File explorer", width=600, height=800)
+    #dpg.create_viewport()
     dpg.setup_dearpygui()
     #width=1200, height=1000,no_close=True,pos=(0,0)
 
-    with dpg.window(label="GoPro File explorer",width=600, height=800,no_close=True,pos=(0,0)):
+    with dpg.window(label="GoPro File explorer",width=600, height=800,pos=(0,0),
+                    no_title_bar=True,  # タイトルバーを非表示にする
+                    no_move=True,       # ウィンドウの移動を禁止する
+                    no_resize=True,     # ウィンドウのリサイズを禁止する
+                    no_collapse=True,   # ウィンドウの折りたたみを禁止する
+                    no_close=True):     # ウィンドウの閉じるボタンを無効にする       
+
         dpg.add_text("GoPro File explorer")
         #dpg.add_button(label="Save", callback=save_callback)
         #dpg.add_input_text(label="string")
