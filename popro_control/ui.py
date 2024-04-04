@@ -579,6 +579,9 @@ def main():
                     parent=dpg.last_item()
                     add_button_files(parent)
 
+    # ビューポートのリサイズを無効化
+    #dpg.set_viewport_resizable(False)
+
     dpg.show_viewport()
     dpg.start_dearpygui()
     dpg.destroy_context()
