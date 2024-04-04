@@ -341,22 +341,41 @@ def add_button_files(parent):
 
     print ('----find gopros = ',lengopro)
     #全てのgoproのfileをdictで取得
-
-    #最初の一台
-    total_media_dict_main = cm.ret_all_media(url=list(gopro_dict.keys())[0])
-    
-    total_media_dict = {}
-
     cre_compi = 2
     dur_compi = 5
 
+    ###
+    alldic = cm.ret_all_media_palla(urls=list(gopro_dict.keys()))
+
+    #最初の一台
+    k1 = list(alldic.keys())[0]
+    total_media_dict_main = alldic[k1]
+
+    print ('total_media_dict_main',total_media_dict_main)
+
+    #最初の一台
+    #total_media_dict_main = cm.ret_all_media(url=list(gopro_dict.keys())[0])
+    
+    #それ以外
+    total_media_dict = {}
+
+    for o in list(alldic.keys())[1:]:
+
+        #print ('gopro_file_buttons',o)
+
+        total_media_dict[o] = alldic[o]
+
+    '''
     for o in list(gopro_dict.keys())[1:]:
 
         print ('gopro_file_buttons',o)
 
         total_media_dict[o] = cm.ret_all_media(url=o)
+    '''
 
-    print ('total_media_dictのkey',total_media_dict.keys())
+    #total_media_dict = cm.ret_all_media_palla(urls=list(gopro_dict.keys())[1:])
+
+    #print ('total_media_dictのkey',total_media_dict.keys())
 
     #invertするわ
     

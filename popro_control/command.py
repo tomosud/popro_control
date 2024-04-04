@@ -220,6 +220,26 @@ def get_json_data(url):
 {"id":"298554459323482383","media":[{"d":"100GOPRO","fs":[{"n":"GX010001.MP4","cre":"1710861484","mod":"1710861484","glrv":"834310","ls":"-1","s":"23898423"},{"n":"GOPR0002.JPG","cre":"1710861621","mod":"1710861621","s":"2969585"},{"n":"GX010003.MP4","cre":"1710861662","mod":"1710861662","glrv":"561217","ls":"-1","s":"6519470"},{"n":"GX010004.MP4","cre":"1710861671","mod":"1710861671","glrv":"351041","ls":"-1","s":"5432126"},{"n":"GX010005.MP4","cre":"1710865287","mod":"1710865287","glrv":"159814","ls":"-1","s":"4979566"},{"n":"GX010006.MP4","cre":"1710865744","mod":"1710865744","glrv":"1368524","ls":"-1","s":"13743412"},{"n":"GX010007.MP4","cre":"1710866831","mod":"1710866831","glrv":"284103","ls":"-1","s":"3891184"}]}]}
 '''
 #'http://172.20.195.51:8080/gp/gpMediaList'
+
+# 並列処理を使用して複数のURLからデータを取得する関数
+def ret_all_media_palla(urls):
+    results = {}
+    with ThreadPoolExecutor(max_workers=len(urls)) as executor:
+        # 各URLに対してret_all_media関数を非同期で実行するFutureを作成
+        future_to_url = {executor.submit(ret_all_media, url): url for url in urls}
+        
+        for future in as_completed(future_to_url):
+            url = future_to_url[future]
+            try:
+                # Futureの結果を取得し、URLをキーとして結果の辞書に追加
+                results[url] = future.result()
+            except Exception as exc:
+                print(f'URL {url} generated an exception: {exc}')
+                results[url] = None  # エラーが発生した場合はNoneを割り当てる
+                
+    return results
+
+
 def ret_all_media(url=testBaseurl):
 
     gurl = url + '/gp/gpMediaList'
