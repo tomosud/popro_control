@@ -18,6 +18,21 @@ testurl = 'http://172.20.195.51:8080/gp/gpMediaList'
 #以下をGoProの個体認証にも使う
 testBaseurl = 'http://172.20.195.51:8080'
 
+def download_files_ThreadPoolExecutor(urls_and_filenames, folder_path):
+    # ThreadPoolExecutorを使って非同期ダウンロードを実行
+
+    size = len(urls_and_filenames)
+
+    with ThreadPoolExecutor(max_workers=size) as executor:
+        # ダウンロードタスクの辞書を作成
+        future_to_url = {executor.submit(download_file, url, file_name, folder_path): url for url, file_name in urls_and_filenames.items()}
+        for future in as_completed(future_to_url):
+            url = future_to_url[future]
+            try:
+                # 結果（成功時のメッセージ）を取得
+                future.result()
+            except Exception as exc:
+                print('%r generated an exception: %s' % (url, exc))
 
 def download_file(url, file_name, folder_path):
     # 指定されたフォルダが存在しない場合は作成
@@ -456,7 +471,6 @@ def copy_to_take_name(dir,takename):
 def write_list_to_file(string_list, filename):
 
 
-
     """
     指定されたリストの各要素を改行区切りでファイルに書き出す。
 
@@ -467,7 +481,6 @@ def write_list_to_file(string_list, filename):
     with open(filename, 'w', encoding='utf-8') as file:
         for item in string_list:
             file.write(f"{item}\n")
-
 
 
 

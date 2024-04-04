@@ -163,7 +163,9 @@ def copy_files(sender, app_data, user_data):
     if not os.path.exists(appnd_savepath):
         os.makedirs(appnd_savepath)
 
-    ph.download_main_wrapper(url_dict=url_dict,appnd_savepath=appnd_savepath)
+    #非同期DLは失敗多いので廃止
+    #ph.download_main_wrapper(url_dict=url_dict,appnd_savepath=appnd_savepath)
+    cm.download_files_ThreadPoolExecutor(urls_and_filenames=url_dict, folder_path=appnd_savepath)
 
     print ('-----Finish!',user_data)
 
