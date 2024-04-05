@@ -177,9 +177,9 @@ def copy_files(sender, app_data, user_data):
 
     takename = dpg.get_value(tex_id)
 
+    #不要　廃止
     d = cm.copy_to_take_name(appnd_savepath,takename)
-
-    cm.write_list_to_file([takename],d + 'take_names.txt')
+    #cm.write_list_to_file([takename],d + 'take_names.txt')
 
     button_file_color_update()
 
@@ -384,7 +384,7 @@ def add_button_files(parent):
         base_cre = total_media_dict_main[o]['cre']
         base_dur = total_media_dict_main[o]['dur']
 
-        print ('-----同時に撮影されたものを探す＞＞＞',total_media_dict_main[o]['dl'])
+        #print ('-----同時に撮影されたものを探す＞＞＞',total_media_dict_main[o]['dl'])
 
         saiyo_list = [total_media_dict_main[o]]
 
@@ -474,17 +474,37 @@ def add_button_files(parent):
 
                 kz = 1
 
-                for onn in mp4s:
+                #previe buttonをgoproの番号順に
 
-                    #openurl = 'http://172.20.195.51:8080/videos/DCIM/100GOPRO/GX010026.MP4'
 
-                    #print ('--mp4s---onn',onn)
+                # ソートするために辞書のアイテムをリストに変換し、内側の辞書の'age'キーでソート
+                sorted_items = sorted(gopro_dict.items(), key=lambda item: item[1]['name'])
+                # ソートされたアイテムから新しい辞書を作成
+                sorted_gopro_dict = {item[0]: item[1] for item in sorted_items}
+                
 
-                    openurl = onn['dl']
+                for onnn in sorted_gopro_dict.keys():
 
-                    dpg.add_button(label=str(kz),callback=open_url,user_data=openurl,width=20, height=15)
+                    print ('--gopro_dict---onn',gopro_dict[onnn]['name'],gopro_dict[onnn]['url'])
 
-                    kz += 1
+                    for onn in mp4s:
+
+                        parsed_url = urlparse(onn['dl'])
+                        # スキーム、ネットロケーション（ホストとポート）を結合して接続先のURLを生成
+                        base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
+
+                        if base_url == gopro_dict[onnn]['url']:
+                            
+
+                            #openurl = 'http://172.20.195.51:8080/videos/DCIM/100GOPRO/GX010026.MP4'
+
+                            #print ('--mp4s---onn',onn)
+
+                            openurl = onn['dl']
+
+                            dpg.add_button(label=str(kz),callback=open_url,user_data=openurl,width=20, height=15)
+
+                            kz += 1
 
                 #あとで色変えとかに使う
                 temp_popro_ui_dict['gopro_file_buttons'][id] = total_media_dict_main[o]['localtime']
