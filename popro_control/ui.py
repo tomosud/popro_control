@@ -606,14 +606,14 @@ def main():
                 dpg.add_button(label="Header 1", width=75, height=75)
                 dpg.add_button(label="Header 2", width=75, height=75)    
                 '''
-        with dpg.child_window(autosize_x=True,width=500, height=50):
+        with dpg.child_window(autosize_x=True,width=600, height=50):
             with dpg.group(horizontal=True, width=0):
                 dpg.add_button(label='Relaod Files',callback=reload_file,width=500, height=20)
 
-        with dpg.child_window(autosize_x=True,width=500, height=500):
+        with dpg.child_window(autosize_x=True,width=600, height=500):
             with dpg.group(horizontal=True, width=0):
 
-                with dpg.child_window(width=500, height=500):
+                with dpg.child_window(width=600, height=500):
                     #撮影したfileのpairを見つけて取得ボタンとして表示
                     parent=dpg.last_item()
                     add_button_files(parent)
