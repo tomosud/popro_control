@@ -2,12 +2,12 @@
 '''
 一時的なテスト用のファイルです。
 '''
-import command as cm
-import ui as ui
-import para_http
+#import popro_command as cm
+import popro_ui as ui
+#import popro_para_http
 
-import requests
-from concurrent.futures import ThreadPoolExecutor, as_completed
+#import requests
+#from concurrent.futures import ThreadPoolExecutor, as_completed
 
 #r = cm.ret_gopros()
 #print ('exsist',len(r.keys()),r)

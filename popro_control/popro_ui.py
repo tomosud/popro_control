@@ -3,12 +3,12 @@
 import dearpygui.dearpygui as dpg
 
 from urllib.parse import urlparse
-import command as cm
+import popro_command as cm
 import uuid
 import os
 import webbrowser
 
-import para_http as ph
+import popro_para_http as ph
 
 folder_path_base = 'C:/GoPro/'
 
