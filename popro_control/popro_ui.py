@@ -1,5 +1,5 @@
 
-
+import shutil
 import dearpygui.dearpygui as dpg
 
 from urllib.parse import urlparse
@@ -23,6 +23,12 @@ gopro_recording = False
 
 #各日付フォルダにfileのrenameの関連付けを保存するjsonと同期して使う
 global_file_rename_dict = {}
+
+global_file_rename_dict = cm.load_settings(file_name=global_ini)
+
+
+if 'add_filepath' not in global_file_rename_dict.keys():
+    global_file_rename_dict['add_filepath'] = ''
 
 
 def ret_uitag(name_str,memo):
@@ -181,6 +187,22 @@ def copy_files(sender, app_data, user_data):
     d = cm.copy_to_take_name(appnd_savepath,takename)
     #cm.write_list_to_file([takename],d + 'take_names.txt')
 
+    if global_file_rename_dict['add_filepath'] != '':
+
+        #d C:/GoPro//2024_04_08/take_12-27_08/
+        day = d.split('/')[-3]
+
+        if cm.exist_addpath(serverpath=global_file_rename_dict['add_filepath']):
+            # os.path.joinを使用してパスを組み立て
+            addsavepath = os.path.join(global_file_rename_dict['add_filepath'], day)
+            addsavepath = os.path.join(addsavepath,takename)
+
+            print('-------add_filepath copy', d, addsavepath)
+            
+            # shutil.copytreeを使用してディレクトリをコピー
+            # コピー先のディレクトリが既に存在してもエラーを発生させずに処理を進める
+            shutil.copytree(d, addsavepath, dirs_exist_ok=True)
+
     button_file_color_update()
 
 def send_map(sender, app_data, user_data):
@@ -255,7 +277,7 @@ def button_file_color_update():
 
     global global_file_rename_dict
 
-    global_file_rename_dict = cm.load_settings(file_name=global_ini)
+    #global_file_rename_dict = cm.load_settings(file_name=global_ini)
 
     #存在によって色を変える
 
@@ -564,6 +586,33 @@ def add_button_command(parant,command):
     pass
 
 
+def addpath_setting(sender, app_data, user_data):
+
+    print(f"rename_setting :: sender is: {sender}")
+    print(f"app_data is: {app_data}")
+    print(f"user_data is url as: {user_data}")
+
+    global global_file_rename_dict
+
+
+    if cm.exist_addpath(serverpath=app_data):
+
+        print (app_data)
+
+        app_data = app_data.replace('\\','/')
+        if app_data[-1] == '/':
+            app_data = app_data[:-1]
+
+        global_file_rename_dict['add_filepath'] = app_data
+        setting_dict = dict(global_file_rename_dict)
+
+        cm.save_settings(setting_dict, file_name=global_ini)
+
+    else:
+        print ('not exist')
+ 
+    #cm.save_settings(setting_dict, file_name=global_ini)
+
 def main():
     global gopro_dict
     gopro_dict = cm.ret_gopros()
@@ -571,6 +620,7 @@ def main():
     dpg.create_context()
     # ビューポートのサイズを設定
     dpg.create_viewport(title="GoPro File explorer", width=600, height=800)
+
     #dpg.create_viewport()
     dpg.setup_dearpygui()
     #width=1200, height=1000,no_close=True,pos=(0,0)
@@ -582,11 +632,14 @@ def main():
                     no_collapse=True,   # ウィンドウの折りたたみを禁止する
                     no_close=True):     # ウィンドウの閉じるボタンを無効にする       
 
-        dpg.add_text("GoPro File explorer")
-        #dpg.add_button(label="Save", callback=save_callback)
-        #dpg.add_input_text(label="string")
-        #dpg.add_slider_float(label="float")
-        #add_ui_test()
+        with dpg.group(horizontal=True):
+            dpg.add_text("Additional save path:")
+            dpg.add_input_text(label=":",default_value=global_file_rename_dict['add_filepath'],callback=addpath_setting,width=250, height=15)
+
+            #dpg.add_button(label="Save", callback=save_callback)
+            #dpg.add_input_text(label="string")
+            #dpg.add_slider_float(label="float")
+            #add_ui_test()
 
         with dpg.menu_bar():
             dpg.add_menu(label="Menu Options")

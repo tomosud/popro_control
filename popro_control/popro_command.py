@@ -8,6 +8,8 @@ import shutil
 
 import glob
 
+import pathlib
+
 # 並列処理用
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -17,6 +19,44 @@ setting_dict = {'key1': 'value1', 'key2': 'value2'}
 testurl = 'http://172.20.195.51:8080/gp/gpMediaList'
 #以下をGoProの個体認証にも使う
 testBaseurl = 'http://172.20.195.51:8080'
+
+
+import pathlib
+
+def exist_addpath(serverpath=''):
+    # パスのフォーマットを修正（\を/に置き換え）
+    serverpath = serverpath.replace('\\', '/')
+
+    # パスが空の場合は何もしない
+    if serverpath == '':
+        return None
+
+    # パスが//で始まるか確認
+    if not serverpath.startswith('//'):
+        print("無効なネットワークパスです。パスは//で始まる必要があります。")
+        return None
+
+    # pathlibを使用してWindows形式のパスに変換
+    # 先頭の//を\\に戻す
+    formatted_path = pathlib.WindowsPath(r'\\' + serverpath[2:])
+
+    # パスの存在確認
+    if formatted_path.exists():
+        print("指定のファイルもしくはディレクトリが存在しています。")
+        # 指定パス以下のフォルダ、ファイルを列挙
+        #print(list(formatted_path.glob('*')))
+
+        return serverpath
+    else:
+        #print("指定のファイルもしくはディレクトリが存在していません。")
+
+        return None
+
+# 関数のテスト（サンプルパスを適切に置き換えて使用してください）
+# exist_addpath('//servername/sharedfolder')
+
+
+
 
 def download_files_ThreadPoolExecutor(urls_and_filenames, folder_path):
     # ThreadPoolExecutorを使って非同期ダウンロードを実行
