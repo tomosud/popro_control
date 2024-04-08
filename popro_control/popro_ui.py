@@ -594,6 +594,10 @@ def addpath_setting(sender, app_data, user_data):
 
     global global_file_rename_dict
 
+    if app_data == '':
+        global_file_rename_dict['add_filepath'] = app_data
+        setting_dict = dict(global_file_rename_dict)
+        cm.save_settings(setting_dict, file_name=global_ini)
 
     if cm.exist_addpath(serverpath=app_data):
 
@@ -605,7 +609,6 @@ def addpath_setting(sender, app_data, user_data):
 
         global_file_rename_dict['add_filepath'] = app_data
         setting_dict = dict(global_file_rename_dict)
-
         cm.save_settings(setting_dict, file_name=global_ini)
 
     else:
