@@ -3,11 +3,10 @@ import os
 import json
 from datetime import datetime, timezone, timedelta
 from zoneinfo import ZoneInfo  # Python 3.9以降で利用可能
+import time
 
 import shutil
-
 import glob
-
 import pathlib
 
 # 並列処理用
@@ -54,7 +53,6 @@ def exist_addpath(serverpath=''):
 
 # 関数のテスト（サンプルパスを適切に置き換えて使用してください）
 # exist_addpath('//servername/sharedfolder')
-
 
 
 
@@ -261,7 +259,30 @@ def get_json_data(url):
 '''
 #'http://172.20.195.51:8080/gp/gpMediaList'
 
-# 並列処理を使用して複数のURLからデータを取得する関数
+
+# 並列処理を使用して複数のURLからjsonのデータを取得する関数
+def ret_json_data_palla(urls):
+    results = {}
+    with ThreadPoolExecutor(max_workers=len(urls)) as executor:
+        # 各URLに対してret_all_media関数を非同期で実行するFutureを作成
+        future_to_url = {executor.submit(get_json_data, url): url for url in urls}
+        
+        for future in as_completed(future_to_url):
+            url = future_to_url[future]
+            try:
+                # Futureの結果を取得し、URLをキーとして結果の辞書に追加
+                results[url] = future.result()
+            except Exception as exc:
+                print(f'URL {url} generated an exception: {exc}')
+                results[url] = None  # エラーが発生した場合はNoneを割り当てる
+
+    #keyをsort
+    results = dict(sorted(results.items()))     
+
+    return results
+
+
+# 並列処理を使用して複数のURLからmediaのデータを取得する関数
 def ret_all_media_palla(urls):
     results = {}
     with ThreadPoolExecutor(max_workers=len(urls)) as executor:
@@ -577,3 +598,83 @@ for o in data.keys():
 #ui()
 
 #demoui()
+def make_timeurl(url,timedict):
+
+    urlbase = url + '/gopro/camera/set_date_time?'
+    
+    #date=2022131&time=345&tzone=-120&dst=1
+    
+    k = 'date'
+    urlbase = urlbase + k + '=' + str(timedict[k]) + '&'
+    
+    k = 'time'
+    urlbase = urlbase + k + '=' + str(timedict[k]) + '&'
+    
+    k = 'tzone'
+    urlbase = urlbase + k + '=' + str(timedict[k]) + '&'    
+    
+    k = 'dst'
+    urlbase = urlbase + k + '=' + str(timedict[k])
+    
+    return urlbase
+
+def get_time():
+
+    #now
+    # 現在の日時を取得（日本時間）、zoneinfoを使用
+    now_zoneinfo = datetime.now(ZoneInfo('Asia/Tokyo'))
+
+    # 辞書に格納するフォーマットを更新
+    date_str_zoneinfo = now_zoneinfo.strftime('%Y_%m_%d')
+    time_str_zoneinfo = now_zoneinfo.strftime('%H_%M_%S')
+    tzone_minutes_zoneinfo = now_zoneinfo.utcoffset().total_seconds() // 60
+
+    # 辞書を作成
+    now = {
+        'date': date_str_zoneinfo,
+        'time': time_str_zoneinfo,
+        'tzone': int(tzone_minutes_zoneinfo),
+        'dst': 0  # 固定
+    }
+
+    print ('now',now)
+
+
+
+    geturls = []
+    seturls = []
+
+    print ('-------time')
+    for o in gopro_dict.keys():
+        #print ('-------time',o)
+
+        seturls.append(make_timeurl(o,now))
+        #make_timeurl(o,now)
+    #時計を合わせる
+    ret_json_data_palla(seturls)   
+
+
+    for o in gopro_dict.keys():
+        #print ('-------time',o)
+
+        geturls.append(o+'/gopro/camera/get_date_time')
+
+    # 処理の開始時間を記録
+    start_time = time.time()
+    results = ret_json_data_palla(geturls)    
+
+    #keyをsort
+    results = dict(sorted(results.items()))        
+
+    # 処理の終了時間を記録
+    end_time = time.time()
+
+    # 経過時間を計算（秒単位）
+    elapsed_time = end_time - start_time
+
+    # 経過時間をプリント
+    print(f"時計を合わせる: {elapsed_time}秒")
+
+    for o in results.keys():
+        print ('-------',o,results[o])
+

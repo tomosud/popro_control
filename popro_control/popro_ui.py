@@ -141,6 +141,14 @@ def copy_files(sender, app_data, user_data):
     print(f"app_data is: {app_data}")
     print(f"user_data is url as: {user_data}")
 
+
+    with dpg.theme() as red_theme:
+        with dpg.theme_component(dpg.mvButton):
+            # ボタンの背景色を設定（ここでは赤色）
+            dpg.add_theme_color(dpg.mvThemeCol_Button, (255, 32, 32, 255))
+
+    dpg.bind_item_theme(sender, red_theme)
+
     m = temp_files_dict[user_data]
 
     #print ('media--\n',m)
@@ -271,7 +279,12 @@ def reload_file():
     #入れ直し
     add_button_files(temp_popro_ui_dict['gopro_file_buttons_parent'])
 
+    #時計を一致
+    cm.get_time()    
+
 def button_file_color_update():
+
+    all_folders = []
 
     global temp_popro_ui_dict
 
@@ -332,6 +345,23 @@ def button_file_color_update():
         if fldername in global_file_rename_dict.keys():
             dpg.set_value(texid, global_file_rename_dict[fldername])
 
+        all_folders.append(fldername)
+
+    #すでに存在しないfolderのkeyを削除
+    #ただし、add_filepathのkeyは削除しない
+
+    dictn = {'add_filepath': global_file_rename_dict['add_filepath']}
+
+    for o in global_file_rename_dict.keys():
+
+        if o in all_folders:
+            dictn[o] = global_file_rename_dict[o]
+
+    global_file_rename_dict = dict(dictn)
+
+    cm.save_settings(global_file_rename_dict, file_name=global_ini)
+
+
 
 #撮影したfileのpairを見つけて取得ボタンとして表示
 def add_button_files(parent):
@@ -363,8 +393,8 @@ def add_button_files(parent):
 
     print ('----find gopros = ',lengopro)
     #全てのgoproのfileをdictで取得
-    cre_compi = 2
-    dur_compi = 5
+    cre_compi = 5
+    dur_compi = 3
 
     ###
     alldic = cm.ret_all_media_palla(urls=list(gopro_dict.keys()))
@@ -373,7 +403,7 @@ def add_button_files(parent):
     k1 = list(alldic.keys())[0]
     total_media_dict_main = alldic[k1]
 
-    print ('total_media_dict_main',total_media_dict_main)
+    #print ('total_media_dict_main',total_media_dict_main)
 
     #最初の一台
     #total_media_dict_main = cm.ret_all_media(url=list(gopro_dict.keys())[0])
@@ -433,7 +463,7 @@ def add_button_files(parent):
                 sa = abs(int(base_cre) - int(now_cre))
 
                 if sa <= cre_compi:
-                    print ('cre',sa)
+                    #print ('cre',sa)
 
                     dictn = dict(total_media_dict[on][onn])
                     dictn['gopro'] = on
@@ -507,7 +537,7 @@ def add_button_files(parent):
 
                 for onnn in sorted_gopro_dict.keys():
 
-                    print ('--gopro_dict---onn',gopro_dict[onnn]['name'],gopro_dict[onnn]['url'])
+                    #print ('--gopro_dict---onn',gopro_dict[onnn]['name'],gopro_dict[onnn]['url'])
 
                     for onn in mp4s:
 
@@ -677,9 +707,14 @@ def main():
     # ビューポートのリサイズを無効化
     #dpg.set_viewport_resizable(False)
 
+    #時計を一致
+    cm.get_time()
+
     dpg.show_viewport()
     dpg.start_dearpygui()
     dpg.destroy_context()
+
+    
 
 '''
 
