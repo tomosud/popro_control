@@ -710,6 +710,9 @@ def main():
     #時計を一致
     cm.get_time()
 
+
+    print (cm.get_network_interfaces())
+
     dpg.show_viewport()
     dpg.start_dearpygui()
     dpg.destroy_context()

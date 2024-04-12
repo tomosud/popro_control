@@ -12,6 +12,12 @@ import pathlib
 # 並列処理用
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+import pathlib
+import psutil
+import socket
+import re
+
+
 gopro_dict = {}
 
 setting_dict = {'key1': 'value1', 'key2': 'value2'}
@@ -19,8 +25,33 @@ testurl = 'http://172.20.195.51:8080/gp/gpMediaList'
 #以下をGoProの個体認証にも使う
 testBaseurl = 'http://172.20.195.51:8080'
 
+#ip_pattern = r'172\.2\d\.1\d{2}\.5\d'
 
-import pathlib
+#
+
+def get_network_interfaces(pattern = r'172\.2\d\.1\d{2}\.5\d'):
+    regex = re.compile(pattern)
+    addrs = psutil.net_if_addrs()
+    network_info = {}
+
+    result = []
+
+    for interface, addr_info in addrs.items():
+        # 正規表現にマッチするIPv4アドレスのみをフィルタリングしてリストに格納
+        addresses = [addr.address for addr in addr_info if addr.family == socket.AF_INET and regex.match(addr.address)]
+        #addresses = [addr.address for addr in addr_info if addr.family == socket.AF_INET]
+        if addresses:  # マッチするIPv4アドレスが存在する場合のみ保存
+            #network_info[interface] = addresses
+
+            ad = addresses[0]
+            #172.26.186.54
+            #172.26.186.51
+            #末尾を1にする #見えてるipと実際のipが違う なぜ？
+
+            ad = ad[:-1] + '1'
+
+            result.append(ad)
+    return result
 
 def exist_addpath(serverpath=''):
     # パスのフォーマットを修正（\を/に置き換え）
@@ -130,28 +161,30 @@ def ret_gopros(connect=True):
     global gopro_dict
 
     #goproのリストを返す
-    '''
-    一旦、以下のリストを返す
-    HERO12 Black01(172.24.106.51)
-    HERO12 Black02 (172.26.186.51)
-    HERO12 Black03 (172.20.195.51)
-    HERO12 Black04 (172.25.113.51)
-    HERO12 Black05 (172.22.148.51)
+
     '''
     data = ['HERO12 Black01(172.24.106.51)',
     'HERO12 Black02 (172.26.186.51)',
     'HERO12 Black03 (172.20.195.51)',
     'HERO12 Black04 (172.25.113.51)',
     'HERO12 Black05 (172.22.148.51)']
+    '''
 
     #ipをkeyにした辞書を返す
     #'http://172.20.195.51:8080'
 
+    #results = ret_json_data_palla(geturls) 
+
     ret = {}
+
+    #iplist　実際に接続したipから取得するようにした
+    data = get_network_interfaces()
     
     for o in data:
             
-            ip = o.split('(')[1].split(')')[0]
+            #ip = o.split('(')[1].split(')')[0]
+
+            ip = o
 
             if '172.' in ip:
                 #usb
@@ -159,22 +192,29 @@ def ret_gopros(connect=True):
 
                 #
                 dictn = {'url':ip}
-
+                '''
                 sep = o.split('(')[0].split(' ')
-
                 dictn['name'] = sep[0] + ' ' + sep[1]
+                '''
+                
+                k = ip + '/gopro/camera/info'
+                r = get_json_data(k)
+                print ('r',r)
 
+                dictn['name'] = r['ap_ssid']
                 dictn['checkurl'] = ip + '/gp/gpMediaList'
 
                 ret[ip] = dictn
 
+            '''
             elif '10.5.5.9' in ip:
                 #wifi
                 ip = 'http://' + ip
-
+            '''
                 #未対応
-    print (ret)
+    #print (ret)
 
+    '''
     newret = {}
 
     if connect == True:
@@ -214,7 +254,12 @@ def ret_gopros(connect=True):
         newret = dict(sorted(newret.items()))
 
         return newret
-    
+    '''
+
+    gopro_dict = ret
+    set_to_bacic_capture_mode()
+    #keyをsort
+    ret = dict(sorted(ret.items()))
     return ret
 
     '''

@@ -10,5 +10,6 @@ setup(
         'tzdata',  # tzdataを追加 タイムゾーンの設定に使用
         'aiohttp',  # aiohttpを追加
         'aiofiles',  # aiofilesを追加
+        'psutil',  # psutilを追加
     ]
 )
