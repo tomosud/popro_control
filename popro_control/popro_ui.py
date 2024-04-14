@@ -646,6 +646,24 @@ def addpath_setting(sender, app_data, user_data):
  
     #cm.save_settings(setting_dict, file_name=global_ini)
 
+def openpath(sender, app_data, user_data):
+    print(f"rename_setting :: sender is: {sender}")
+    print(f"app_data is: {app_data}")
+    print(f"user_data is : {user_data}")
+
+    path = ''
+    if user_data == 'Additional save path':
+        if 'add_filepath' in global_file_rename_dict.keys():
+            if global_file_rename_dict['add_filepath'] != '':
+                path = global_file_rename_dict['add_filepath']
+    
+    elif user_data == 'local temp':
+        path = 'C:/GoPro/'
+
+    if path != '':
+        #エクスプローラーでフォルダを開く
+        os.startfile(path)
+
 def main():
     global gopro_dict
     gopro_dict = cm.ret_gopros()
@@ -666,9 +684,12 @@ def main():
                     no_close=True):     # ウィンドウの閉じるボタンを無効にする       
 
         with dpg.group(horizontal=True):
-            dpg.add_text("Additional save path:")
-            dpg.add_input_text(label=":",default_value=global_file_rename_dict['add_filepath'],callback=addpath_setting,width=250, height=15)
+             
+            dpg.add_button(label='Additional save path:',user_data='Additional save path',callback=openpath,width=150, height=20)
+            
+            dpg.add_input_text(label=":  ",default_value=global_file_rename_dict['add_filepath'],callback=addpath_setting,width=250, height=15)
 
+            dpg.add_button(label=':local temp path',user_data='local temp',callback=openpath,width=120, height=20)
             #dpg.add_button(label="Save", callback=save_callback)
             #dpg.add_input_text(label="string")
             #dpg.add_slider_float(label="float")
