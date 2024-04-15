@@ -655,7 +655,10 @@ def openpath(sender, app_data, user_data):
     if user_data == 'Additional save path':
         if 'add_filepath' in global_file_rename_dict.keys():
             if global_file_rename_dict['add_filepath'] != '':
-                path = global_file_rename_dict['add_filepath']
+                path = global_file_rename_dict['add_filepath'].replace('/','\\')
+                #network pathは\で区切る
+                
+
     
     elif user_data == 'local temp':
         path = 'C:/GoPro/'
