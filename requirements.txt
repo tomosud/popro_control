@@ -1,0 +1,5 @@
+requests
+dearpygui==1.11.1
+tzdata
+aiohttp
+aiofiles
