@@ -427,6 +427,18 @@ def ret_all_media(url=testBaseurl):
     return data
 
 def save_settings(setting_dict, file_name='tool_setting.ini'):
+
+    #ファイルなければ作成　フォルダも
+    if not os.path.exists(file_name):
+
+        #フォルダも作成
+        sep = file_name.split('/')
+        path = '/'.join(sep[:-1])
+
+        if not os.path.exists(path):
+            os.makedirs(path)
+            
+
     with open(file_name, 'w') as file:
         json.dump(setting_dict, file)
 
