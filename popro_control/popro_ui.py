@@ -670,6 +670,8 @@ def openpath(sender, app_data, user_data):
 def wol(sender, app_data, user_data):
     print('wol')
 
+    cm.wol_all()
+
 def main():
     global gopro_dict
     gopro_dict = cm.ret_gopros()

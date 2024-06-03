@@ -738,3 +738,20 @@ def get_time():
     for o in results.keys():
         print ('-------',o,results[o])
 
+
+def wol_all():
+
+    for o in gopro_dict.keys():
+
+        print (o)
+
+        print (gopro_dict[o])
+
+        #{'url': 'http://172.25.113.51:8080', 'name': 'HERO12 Black04', 'checkurl': 'http://172.25.113.51:8080/gp/gpMediaList', 'ap_mac_addr': '06574710694f'}
+
+        uurl = gopro_dict[o]['url'].replace(':8080','')
+        ap_mac_addr = gopro_dict[o]['ap_mac_addr']
+
+        
+        
+
