@@ -17,6 +17,9 @@ import psutil
 import socket
 import re
 
+from wakeonlan import send_magic_packet
+
+
 
 gopro_dict = {}
 
@@ -738,20 +741,45 @@ def get_time():
     for o in results.keys():
         print ('-------',o,results[o])
 
+def format_mac_address(mac):
+    """
+    Format a MAC address to the standard colon-separated format.
+
+    Args:
+        mac: the MAC address as a string of 12 hexadecimal digits.
+
+    Returns:
+        The MAC address formatted with colons.
+    """
+    if len(mac) != 12:
+        raise ValueError("MAC address should be 12 hexadecimal digits")
+    return ':'.join(mac[i:i+2] for i in range(0, len(mac), 2))
 
 def wol_all():
 
     for o in gopro_dict.keys():
 
-        print (o)
+        print ('-------',o)
 
-        print (gopro_dict[o])
+        #print (gopro_dict[o])
 
         #{'url': 'http://172.25.113.51:8080', 'name': 'HERO12 Black04', 'checkurl': 'http://172.25.113.51:8080/gp/gpMediaList', 'ap_mac_addr': '06574710694f'}
 
-        uurl = gopro_dict[o]['url'].replace(':8080','')
-        ap_mac_addr = gopro_dict[o]['ap_mac_addr']
+        ip_address = gopro_dict[o]['url'].split(':')[1].split('/')[-1]
+        mac_address = format_mac_address(gopro_dict[o]['ap_mac_addr'])
 
         
-        
+        port = 9
 
+        print (ip_address)
+        print (mac_address)
+        print (port)
+
+        print (len(mac_address),'<<<')
+
+        send_magic_packet(mac_address, ip_address, port=port)
+
+        print ('try to send WOL :',gopro_dict[o]['name'])
+
+        # 1秒間のポーズ
+        time.sleep(1)
