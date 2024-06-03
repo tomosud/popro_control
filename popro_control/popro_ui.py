@@ -667,6 +667,9 @@ def openpath(sender, app_data, user_data):
         #エクスプローラーでフォルダを開く
         os.startfile(path)
 
+def wol(sender, app_data, user_data):
+    print('wol')
+
 def main():
     global gopro_dict
     gopro_dict = cm.ret_gopros()
@@ -699,8 +702,9 @@ def main():
             #add_ui_test()
 
         with dpg.menu_bar():
-            dpg.add_menu(label="Menu Options")
-            
+            with dpg.menu(label="Menu"):
+                dpg.add_text("Wake up!!")
+                dpg.add_menu_item(label="Try", callback=wol)
 
         with dpg.child_window(autosize_x=True, height=100):
             with dpg.group(horizontal=True):

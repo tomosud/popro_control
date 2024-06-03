@@ -204,6 +204,9 @@ def ret_gopros(connect=True):
                 dictn['name'] = r['ap_ssid']
                 dictn['checkurl'] = ip + '/gp/gpMediaList'
 
+                #for WOL
+                dictn['ap_mac_addr'] = r['ap_mac_addr']
+
                 ret[ip] = dictn
 
             '''
