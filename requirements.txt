@@ -4,3 +4,4 @@ tzdata
 aiohttp
 aiofiles
 psutil
+wakeonlan
