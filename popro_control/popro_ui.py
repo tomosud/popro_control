@@ -252,6 +252,8 @@ def add_button_gopros(parent):
 
         dpg.add_button(label=label,parent=parent,tag=temp_popro_ui_dict['gopro_single_buttons'][-1],callback=send_map,user_data=o,width=75, height=100)
 
+        cm.command_send(o,'beep_mute')
+        cm.command_send(o,'beep')
 
 def reload_file():
     
@@ -739,6 +741,9 @@ def main():
 
     #時計を一致
     cm.get_time()
+
+    #beep
+
 
 
     print (cm.get_network_interfaces())
