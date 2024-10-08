@@ -78,6 +78,16 @@ def send_camera_command_do(camera_list,camera_command):
         return f"Exception: {str(e)}"
 
 
+def set_server_url(url):
+    
+    global server_url
+
+    server_url = url
+
+    print("Server URL is set to ",server_url)
+
+
+
 def connect_all_cameras(try_to_connect = True):
 
     global all_cameras
@@ -93,6 +103,8 @@ def connect_all_cameras(try_to_connect = True):
     nc_camera_list = []
 
     camera_dict = get_all_cameras()
+
+    print (camera_dict)
 
     if camera_dict["status_code"] == 0:
         # カメラリストの取得に成功

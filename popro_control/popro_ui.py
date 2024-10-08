@@ -9,6 +9,9 @@ import os
 import webbrowser
 
 import popro_para_http as ph
+import popro_camera_server_control as psc
+
+import time
 
 folder_path_base = 'C:/GoPro/'
 
@@ -158,6 +161,10 @@ def copy_files(sender, app_data, user_data):
 
     appnd_savepath = ''
 
+
+    #処理時間を計測する
+    start_time = time.time()  # 開始時間を記録
+
     for o in m:
 
         #print('o',o)
@@ -195,6 +202,13 @@ def copy_files(sender, app_data, user_data):
     d = cm.copy_to_take_name(appnd_savepath,takename)
     #cm.write_list_to_file([takename],d + 'take_names.txt')
 
+    #ここでで接続しなおす
+    psc.connect_all_cameras(try_to_connect = True)
+
+    end_time = time.time()  # 終了時間を記録
+    elapsed_time = end_time - start_time  # 経過時間を計算
+    print(f"--------GoproからのCopy 処理時間: {elapsed_time} 秒")    
+
     if global_file_rename_dict['add_filepath'] != '':
 
         #d C:/GoPro//2024_04_08/take_12-27_08/
@@ -212,6 +226,10 @@ def copy_files(sender, app_data, user_data):
             shutil.copytree(d, addsavepath, dirs_exist_ok=True)
 
     button_file_color_update()
+
+    end_time = time.time()  # 終了時間を記録
+    elapsed_time = end_time - start_time  # 経過時間を計算
+    print(f"---------FileServerへのCopy 処理時間: {elapsed_time} 秒")        
 
 def send_map(sender, app_data, user_data):
 
@@ -251,7 +269,6 @@ def add_button_gopros(parent):
         label = gopro_dict[o]['name'].replace(' ','\n')
 
         dpg.add_button(label=label,parent=parent,tag=temp_popro_ui_dict['gopro_single_buttons'][-1],callback=send_map,user_data=o,width=50, height=40)
-
 
 def reload_file():
     
@@ -360,7 +377,6 @@ def button_file_color_update():
     global_file_rename_dict = dict(dictn)
 
     cm.save_settings(global_file_rename_dict, file_name=global_ini)
-
 
 
 #撮影したfileのpairを見つけて取得ボタンとして表示
@@ -711,10 +727,7 @@ def openpath(sender, app_data, user_data):
         #エクスプローラーでフォルダを開く
         os.startfile(path)
 
-
 '''
-
-
 def wol(sender, app_data, user_data):
     print('wol')
 
@@ -743,6 +756,64 @@ def setApiKey_remote(sender, app_data, user_data):
         # ポップアップウィンドウ内にボタンを作成
         dpg.add_button(label="OK", callback=save_api_key, width=100, height=30)
 '''
+def get_cyclic_value(my_list, index):
+    # リストの個数で剰余を取ることで、indexがリストの範囲を超えないようにする
+    cyclic_index = index % len(my_list)
+    return my_list[cyclic_index]
+
+# タイマー関数
+def timer_with_function(seconds):
+
+    gopros =  gopro_dict.keys()
+
+    print ('-----------',gopros,len(gopros))
+
+    kz = 0
+
+    for i in range(seconds):
+        #function_a()  # 1秒ごとに関数Aを実行
+        time.sleep(1)  # 1秒待機
+
+        if len(gopros) == 0:
+            print ('no gopro')
+        
+        else:
+
+            s = get_cyclic_value(gopros,kz)
+
+            cm.command_send(s,'beep_mute')
+            cm.command_send(s,'beep')
+
+        kz += 1
+
+        print (kz,':',seconds)
+
+
+    print(f"{seconds}秒経過しました")
+
+
+
+def send_server_command(sender, app_data, user_data):
+
+    print(f"rename_setting :: sender is: {sender}")
+    print(f"app_data is: {app_data}")
+    print(f"user_data is: {user_data}")
+
+    
+
+    if 'Commend_server' in global_file_rename_dict.keys(): #設定あれば
+        #if psc.connect_all_cameras(try_to_connect = True): 
+        psc.set_server_url(global_file_rename_dict['Commend_server'])
+
+        if user_data[1] != 0:
+            timer_with_function(user_data[1])
+
+        psc.send_camera_command(user_data[0])
+
+    else:
+        print ('no server setting')
+        return
+
 
 def main():
     global gopro_dict
@@ -817,8 +888,48 @@ def main():
 
                                     dpg.add_input_text(label=":  ",default_value=deff_url,callback=addpath_setting,width=250, height=15)
 
+        #record button
+        #if psc.connect_all_cameras(try_to_connect = True): #全てのカメラに接続できたら
+        if 'Commend_server' in global_file_rename_dict.keys(): #設定あれば
+            if psc.connect_all_cameras(try_to_connect = True): #全てのカメラに接続できたら
+                hn = 35
 
-        with dpg.child_window(autosize_x=True, height=70):
+                with dpg.theme() as record_theme:
+                    with dpg.theme_component(dpg.mvButton):
+                        # ボタンの背景色を設定
+                        dpg.add_theme_color(dpg.mvThemeCol_Button, (32,200,32, 255))
+                with dpg.theme() as stop_theme:
+                    with dpg.theme_component(dpg.mvButton):
+                        # ボタンの背景色を設定
+                        dpg.add_theme_color(dpg.mvThemeCol_Button, (200,32, 32, 255))
+                
+                recb = []
+                with dpg.child_window(autosize_x=True, height=50):
+                    with dpg.group(horizontal=True):
+
+                        parent=dpg.last_item()
+                        dpg.add_text("Rec:")
+                        rb = dpg.add_button(label="Record\nALL", user_data=['startRecording',0],callback=send_server_command,width=150, height=hn)
+                        recb.append(rb)
+                        rb = dpg.add_button(label="Timer\n10sec",  user_data=['startRecording',10],callback=send_server_command,width=45, height=hn)
+                        recb.append(rb)
+                        rb = dpg.add_button(label="Timer\n8sec",  user_data=['startRecording',8],callback=send_server_command,width=45, height=hn)
+                        recb.append(rb)
+                        rb = dpg.add_button(label="Timer\n5sec",  user_data=['startRecording',5],callback=send_server_command,width=45, height=hn)
+                        recb.append(rb)
+                        rb = dpg.add_button(label="Timer\n3sec",  user_data=['startRecording',3],callback=send_server_command,width=45, height=hn)
+                        recb.append(rb)
+
+                        dpg.add_text("    :    \n    :    ")                   
+                        st = dpg.add_button(label="STOP ALL",  user_data=['stopRecording',0],callback=send_server_command,width=75, height=hn)
+
+                    for rb in recb:
+                        dpg.bind_item_theme(rb, record_theme)
+
+                    dpg.bind_item_theme(st, stop_theme)
+
+        #gopros
+        with dpg.child_window(autosize_x=True, height=50):
             with dpg.group(horizontal=True):
 
                 parent=dpg.last_item()
@@ -831,7 +942,10 @@ def main():
                 dpg.add_button(label="Header 3", width=75, height=75)
                 dpg.add_button(label="Header 1", width=75, height=75)
                 dpg.add_button(label="Header 2", width=75, height=75)    
+
                 '''
+
+
         with dpg.child_window(autosize_x=True,width=600, height=50):
             with dpg.group(horizontal=True, width=0):
                 dpg.add_button(label='Relaod Files',callback=reload_file,width=500, height=20)
