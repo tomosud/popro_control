@@ -250,7 +250,7 @@ def add_button_gopros(parent):
 
         label = gopro_dict[o]['name'].replace(' ','\n')
 
-        dpg.add_button(label=label,parent=parent,tag=temp_popro_ui_dict['gopro_single_buttons'][-1],callback=send_map,user_data=o,width=75, height=100)
+        dpg.add_button(label=label,parent=parent,tag=temp_popro_ui_dict['gopro_single_buttons'][-1],callback=send_map,user_data=o,width=75, height=50)
 
 
 def reload_file():
@@ -643,7 +643,47 @@ def addpath_setting(sender, app_data, user_data):
 
     else:
         print ('not exist')
- 
+
+#settingに内容を保存する汎用的な関数
+#user_settingでkeyと、内容の一致確認のlistを設定する　
+# 'Commend_server',['http://',':'] 
+def setting_save_any(sender, app_data, user_data):
+
+    global global_file_rename_dict
+
+    print(f"rename_setting :: sender is: {sender}")
+    print(f"app_data is: {app_data}")
+    print(f"user_data is url as: {user_data}")
+
+
+    if app_data != '':
+
+        flg = 0
+
+        for o in user_data[1]:
+
+            if o not in app_data:
+                flg = flg + 1
+                print ('not in',o,flg)
+
+        if flg == 0 and '*' not in app_data:
+
+            print ('setting_save_any:',app_data)
+
+            global_file_rename_dict[user_data[0]] = app_data
+            setting_dict = dict(global_file_rename_dict)
+            cm.save_settings(setting_dict, file_name=global_ini)
+
+    '''
+    global global_file_rename_dict
+
+    if app_data == '':
+        global_file_rename_dict['add_filepath'] = app_data
+        setting_dict = dict(global_file_rename_dict)
+        cm.save_settings(setting_dict, file_name=global_ini)
+
+
+    '''
     #cm.save_settings(setting_dict, file_name=global_ini)
 
 def openpath(sender, app_data, user_data):
@@ -671,17 +711,38 @@ def openpath(sender, app_data, user_data):
         #エクスプローラーでフォルダを開く
         os.startfile(path)
 
+
+'''
+
+
 def wol(sender, app_data, user_data):
     print('wol')
 
     cm.wol_all()
 
 
+def close_popup(sender, app_data, user_data):
+    print('close_popup')
+    dpg.delete_item("popup_id")
+
+def save_api_key(sender, app_data, user_data):
+
+    key = dpg.get_value("api_key_input")
+
+    print('save_api_key', key)
+
 def setApiKey_remote(sender, app_data, user_data):
     print('setApiKey_remote')
 
     #popupでtextを入力させる
-    
+
+    # ポップアップウィンドウを作成
+    with dpg.popup(id="popup_id", modal=True, mousebutton=1, width=300, height=100, on_close=close_popup):
+        # ポップアップウィンドウ内にテキスト入力ボックスを作成
+        dpg.add_input_text(label="API Key", hint="Enter API Key", width=200, height=20, id="api_key_input")
+        # ポップアップウィンドウ内にボタンを作成
+        dpg.add_button(label="OK", callback=save_api_key, width=100, height=30)
+'''
 
 def main():
     global gopro_dict
@@ -706,7 +767,16 @@ def main():
              
             dpg.add_button(label='Additional save path:',user_data='Additional save path',callback=openpath,width=150, height=20)
             
-            dpg.add_input_text(label=":  ",default_value=global_file_rename_dict['add_filepath'],callback=addpath_setting,width=250, height=15)
+            #dpg.add_input_text(label=":  ",default_value=global_file_rename_dict['add_filepath'],callback=addpath_setting,width=250, height=15)
+
+            if len(global_file_rename_dict['add_filepath']) > 20:
+
+                sepp = global_file_rename_dict['add_filepath'].split('/')
+
+                dpg.add_text('/'.join(sepp[:4]) + '/.../' + sepp[-1])
+            else:
+
+                dpg.add_text(global_file_rename_dict['add_filepath'])
 
             dpg.add_button(label=':local temp path',user_data='local temp',callback=openpath,width=120, height=20)
             #dpg.add_button(label="Save", callback=save_callback)
@@ -718,8 +788,35 @@ def main():
             with dpg.menu(label="Menu"):
                 #dpg.add_text("Wake up!!")
                 #dpg.add_menu_item(label="Try", callback=wol)
-                dpg.add_text("Remote Control")
-                dpg.add_menu_item(label="Set API Key", callback=setApiKey_remote)
+                #dpg.add_text("Remote Control")
+                #dpg.add_menu_item(label="Set API Key", callback=setApiKey_remote)
+
+                #http://10.102.106.60:810
+
+                with dpg.tree_node(label="Commend server"):
+                    dpg.add_text("Set Camera Tools for Hero Commend server")
+                    dpg.add_text("e.g. http://10.102.106.60:810")
+                    dpg.add_separator()
+
+                    deff_url = 'http://*.*.*.*:*'
+                    
+                    if 'Commend_server' in global_file_rename_dict.keys():
+                        deff_url = global_file_rename_dict['Commend_server']
+
+                    dpg.add_input_text(label="",user_data=['Commend_server',['http://','.',':']], default_value=deff_url,callback=setting_save_any,width=250, height=15)
+
+                with dpg.tree_node(label="Additional SavePath"):
+                                    dpg.add_text("Set additional file save path")
+                                    dpg.add_text("e.g. \\*.*.*.*\Project_***\Shared\Move_ai")
+                                    dpg.add_separator()
+
+                                    deff_url = '\\*.*.*.*\Project_***\Shared\Move_ai'
+                                    
+                                    if 'Commend_server' in global_file_rename_dict.keys():
+                                        deff_url = global_file_rename_dict['add_filepath']
+
+                                    dpg.add_input_text(label=":  ",default_value=deff_url,callback=addpath_setting,width=250, height=15)
+
 
         with dpg.child_window(autosize_x=True, height=100):
             with dpg.group(horizontal=True):
@@ -759,8 +856,6 @@ def main():
     dpg.show_viewport()
     dpg.start_dearpygui()
     dpg.destroy_context()
-
-    
 
 '''
 
