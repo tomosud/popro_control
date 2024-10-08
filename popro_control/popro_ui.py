@@ -83,7 +83,7 @@ def recording():
 
 def save_callback():
     print("Save Clicked")
-    print_this()
+    #print_this()
 
     # 使用例
     # 保存
@@ -367,7 +367,11 @@ def button_file_color_update():
     #すでに存在しないfolderのkeyを削除
     #ただし、add_filepathのkeyは削除しない
 
+    #ここ良くない仕様　keyの種類が増えると毎回足さないといけない
     dictn = {'add_filepath': global_file_rename_dict['add_filepath']}
+
+    if 'Commend_server' in global_file_rename_dict.keys():
+        dictn['Commend_server'] = global_file_rename_dict['Commend_server']
 
     for o in global_file_rename_dict.keys():
 
