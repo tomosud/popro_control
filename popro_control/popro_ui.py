@@ -250,7 +250,7 @@ def add_button_gopros(parent):
 
         label = gopro_dict[o]['name'].replace(' ','\n')
 
-        dpg.add_button(label=label,parent=parent,tag=temp_popro_ui_dict['gopro_single_buttons'][-1],callback=send_map,user_data=o,width=75, height=50)
+        dpg.add_button(label=label,parent=parent,tag=temp_popro_ui_dict['gopro_single_buttons'][-1],callback=send_map,user_data=o,width=50, height=40)
 
 
 def reload_file():
