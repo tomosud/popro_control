@@ -17,7 +17,7 @@ import psutil
 import socket
 import re
 
-from wakeonlan import send_magic_packet
+#from wakeonlan import send_magic_packet
 
 
 
@@ -314,6 +314,10 @@ def get_json_data(url):
 # 並列処理を使用して複数のURLからjsonのデータを取得する関数
 def ret_json_data_palla(urls):
     results = {}
+
+    if len(urls) == 0:
+        return results
+
     with ThreadPoolExecutor(max_workers=len(urls)) as executor:
         # 各URLに対してret_all_media関数を非同期で実行するFutureを作成
         future_to_url = {executor.submit(get_json_data, url): url for url in urls}
@@ -777,7 +781,7 @@ def wol_all():
 
         print (len(mac_address),'<<<')
 
-        send_magic_packet(mac_address, ip_address, port=port)
+        #send_magic_packet(mac_address, ip_address, port=port)
 
         print ('try to send WOL :',gopro_dict[o]['name'])
 

@@ -252,8 +252,6 @@ def add_button_gopros(parent):
 
         dpg.add_button(label=label,parent=parent,tag=temp_popro_ui_dict['gopro_single_buttons'][-1],callback=send_map,user_data=o,width=75, height=100)
 
-        cm.command_send(o,'beep_mute')
-        cm.command_send(o,'beep')
 
 def reload_file():
     
@@ -665,6 +663,10 @@ def openpath(sender, app_data, user_data):
     elif user_data == 'local temp':
         path = 'C:/GoPro/'
 
+        #dir無ければ作る
+        if not os.path.exists(path):
+            os.makedirs(path)
+
     if path != '':
         #エクスプローラーでフォルダを開く
         os.startfile(path)
@@ -673,6 +675,13 @@ def wol(sender, app_data, user_data):
     print('wol')
 
     cm.wol_all()
+
+
+def setApiKey_remote(sender, app_data, user_data):
+    print('setApiKey_remote')
+
+    #popupでtextを入力させる
+    
 
 def main():
     global gopro_dict
@@ -707,8 +716,10 @@ def main():
 
         with dpg.menu_bar():
             with dpg.menu(label="Menu"):
-                dpg.add_text("Wake up!!")
-                dpg.add_menu_item(label="Try", callback=wol)
+                #dpg.add_text("Wake up!!")
+                #dpg.add_menu_item(label="Try", callback=wol)
+                dpg.add_text("Remote Control")
+                dpg.add_menu_item(label="Set API Key", callback=setApiKey_remote)
 
         with dpg.child_window(autosize_x=True, height=100):
             with dpg.group(horizontal=True):
@@ -741,9 +752,6 @@ def main():
 
     #時計を一致
     cm.get_time()
-
-    #beep
-
 
 
     print (cm.get_network_interfaces())
