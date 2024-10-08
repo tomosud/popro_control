@@ -818,7 +818,7 @@ def main():
                                     dpg.add_input_text(label=":  ",default_value=deff_url,callback=addpath_setting,width=250, height=15)
 
 
-        with dpg.child_window(autosize_x=True, height=100):
+        with dpg.child_window(autosize_x=True, height=70):
             with dpg.group(horizontal=True):
 
                 parent=dpg.last_item()
