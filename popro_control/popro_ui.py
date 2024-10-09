@@ -804,7 +804,7 @@ def timer_with_function(seconds):
     time.sleep(1)  # 1秒待機
     print(f"{seconds}秒経過しました")
 
-    for i in range(second):
+    for i in range(seconds):
         cm.command_send(1,'beep_mute')
         cm.command_send(1,'beep')
     
