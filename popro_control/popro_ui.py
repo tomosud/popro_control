@@ -768,7 +768,7 @@ def get_cyclic_value(my_list, index):
 # タイマー関数
 def timer_with_function(seconds):
 
-    gopros =  gopro_dict.keys()
+    gopros =  list(gopro_dict.keys())
 
     print ('-----------',gopros,len(gopros))
 
