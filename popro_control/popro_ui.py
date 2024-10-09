@@ -803,6 +803,10 @@ def timer_with_function(seconds):
 
     time.sleep(1)  # 1秒待機
     print(f"{seconds}秒経過しました")
+
+    for i in range(second):
+        cm.command_send(1,'beep_mute')
+        cm.command_send(1,'beep')
     
 
 
@@ -813,7 +817,8 @@ def send_server_command(sender, app_data, user_data):
     print(f"app_data is: {app_data}")
     print(f"user_data is: {user_data}")
 
-    
+    #時計を一致
+    cm.get_time()
 
     if 'Commend_server' in global_file_rename_dict.keys(): #設定あれば
         #if psc.connect_all_cameras(try_to_connect = True): 
@@ -978,7 +983,6 @@ def main():
 
     #時計を一致
     cm.get_time()
-
 
     print (cm.get_network_interfaces())
 
