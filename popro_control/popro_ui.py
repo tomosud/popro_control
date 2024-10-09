@@ -788,6 +788,11 @@ def timer_with_function(seconds):
             cm.command_send(s,'beep_mute')
             cm.command_send(s,'beep')
 
+            time.sleep(0.1)
+
+            cm.command_send(s,'beep_mute')
+            cm.command_send(s,'beep')
+
         kz += 1
 
         print (kz,':',seconds)
@@ -820,6 +825,7 @@ def send_server_command(sender, app_data, user_data):
 
 
 def main():
+
     global gopro_dict
     gopro_dict = cm.ret_gopros()
 
