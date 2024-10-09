@@ -774,7 +774,10 @@ def timer_with_function(seconds):
 
     kz = 0
 
-    for i in range(seconds):
+    if seconds <= 2:
+        seconds = 2
+
+    for i in range(seconds-1):
         #function_a()  # 1秒ごとに関数Aを実行
         time.sleep(1)  # 1秒待機
 
@@ -788,7 +791,8 @@ def timer_with_function(seconds):
             cm.command_send(s,'beep_mute')
             cm.command_send(s,'beep')
 
-            time.sleep(0.1)
+            s = get_cyclic_value(gopros,kz+1)
+            time.sleep(0.05)
 
             cm.command_send(s,'beep_mute')
             cm.command_send(s,'beep')
@@ -797,8 +801,9 @@ def timer_with_function(seconds):
 
         print (kz,':',seconds)
 
-
+    time.sleep(1)  # 1秒待機
     print(f"{seconds}秒経過しました")
+    
 
 
 
