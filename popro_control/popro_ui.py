@@ -792,7 +792,7 @@ def timer_with_function(seconds):
             cm.command_send(s,'beep')
 
             s = get_cyclic_value(gopros,kz+1)
-            time.sleep(0.05)
+            time.sleep(0.2)
 
             cm.command_send(s,'beep_mute')
             cm.command_send(s,'beep')
