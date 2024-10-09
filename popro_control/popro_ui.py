@@ -804,9 +804,9 @@ def timer_with_function(seconds):
     time.sleep(1)  # 1秒待機
     print(f"{seconds}秒経過しました")
 
-    for i in gopros:
-        cm.command_send(1,'beep_mute')
-        cm.command_send(1,'beep')
+    for o in gopros:
+        cm.command_send(o,'beep_mute')
+        cm.command_send(o,'beep')
     
 
 
