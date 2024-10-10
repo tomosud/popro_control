@@ -13,7 +13,7 @@ import popro_camera_server_control as psc
 
 import time
 
-import popro_remote as prt
+#import popro_remote as prt
 
 folder_path_base = 'C:/GoPro/'
 
@@ -825,11 +825,15 @@ def timer_with_function(seconds):
     
 
 
-
 def send_server_command(sender, app_data, user_data):
 
-    print(f"rename_setting :: sender is: {sender}")
-    print(f"app_data is: {app_data}")
+    send_server_command_do(user_data)
+
+
+def send_server_command_do(user_data,debug = 0):
+
+    #print(f"rename_setting :: sender is: {sender}")
+    #print(f"app_data is: {app_data}")
     print(f"user_data is: {user_data}")
 
     #時計を一致
@@ -842,7 +846,9 @@ def send_server_command(sender, app_data, user_data):
         if user_data[1] != 0:
             timer_with_function(user_data[1])
 
-        psc.send_camera_command(user_data[0])
+        if debug == 0:
+
+            psc.send_camera_command(user_data[0])
 
     else:
         print ('no server setting')
@@ -912,11 +918,11 @@ def main():
                     dpg.add_input_text(label="",user_data=['Commend_server',['http://','.',':']], default_value=deff_url,callback=setting_save_any,width=250, height=15)
 
                 with dpg.tree_node(label="Additional SavePath"):
-                                    dpg.add_text("Set additional file save path")
-                                    dpg.add_text("e.g. \\*.*.*.*\Project_***\Shared\Move_ai")
+                                    dpg.add_text(r"Set additional file save path")
+                                    dpg.add_text(r"e.g. \\*.*.*.*\***\Shared\Move_ai")
                                     dpg.add_separator()
 
-                                    deff_url = '\\*.*.*.*\Project_***\Shared\Move_ai'
+                                    deff_url = r'\\*.*.*.*\***\Shared\Move_ai'
                                     
                                     if 'Commend_server' in global_file_rename_dict.keys():
                                         deff_url = global_file_rename_dict['add_filepath']

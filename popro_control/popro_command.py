@@ -558,17 +558,7 @@ def record(url,on_off):
 
 '''
 dirを指定して、そのdirのmp4をすべて取得する
-C:\GoPro\2024_04_03\2024_04_03_12_35_13\
 
-例
-"C:\GoPro\2024_04_03\2024_04_03_12_35_13\HERO12 Black05_GX010023.MP4"
-"C:\GoPro\2024_04_03\2024_04_03_12_35_13\HERO12 Black01_GX010012.MP4"
-"C:\GoPro\2024_04_03\2024_04_03_12_35_13\HERO12 Black02_GX010013.MP4"
-"C:\GoPro\2024_04_03\2024_04_03_12_35_13\HERO12 Black03_GX010026.MP4"
-"C:\GoPro\2024_04_03\2024_04_03_12_35_13\HERO12 Black04_GX010012.MP4"
-
-上を以下のようにコピーする
-C:\GoPro\2024_04_03\{takename}\cam01_{takename}.mp4
 '''
 
 def copy_to_take_name(dir,takename):
