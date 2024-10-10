@@ -13,6 +13,8 @@ import popro_camera_server_control as psc
 
 import time
 
+import popro_remote as prt
+
 folder_path_base = 'C:/GoPro/'
 
 global_ini = folder_path_base + 'Rename_Setting.ini'
@@ -29,6 +31,7 @@ global_file_rename_dict = {}
 
 global_file_rename_dict = cm.load_settings(file_name=global_ini)
 
+copying = 0
 
 if 'add_filepath' not in global_file_rename_dict.keys():
     global_file_rename_dict['add_filepath'] = ''
@@ -145,6 +148,16 @@ def copy_files(sender, app_data, user_data):
     print(f"user_data is url as: {user_data}")
 
 
+    global copying
+    
+    #多重にcopyしないために
+    if copying == 1:
+        #
+        print ('!今はCopy中なので受け付けない')
+        return 0
+    
+    copying = 1
+
     with dpg.theme() as red_theme:
         with dpg.theme_component(dpg.mvButton):
             # ボタンの背景色を設定（ここでは赤色）
@@ -227,6 +240,8 @@ def copy_files(sender, app_data, user_data):
 
     button_file_color_update()
 
+    copying = o
+
     end_time = time.time()  # 終了時間を記録
     elapsed_time = end_time - start_time  # 経過時間を計算
     print(f"---------FileServerへのCopy 処理時間: {elapsed_time} 秒")     
@@ -269,7 +284,7 @@ def add_button_gopros(parent):
 
         label = gopro_dict[o]['name'].replace(' ','\n')
 
-        dpg.add_button(label=label,parent=parent,tag=temp_popro_ui_dict['gopro_single_buttons'][-1],callback=send_map,user_data=o,width=50, height=40)
+        dpg.add_button(label=label,parent=parent,tag=temp_popro_ui_dict['gopro_single_buttons'][-1],callback=send_map,user_data=o,width=62, height=40)
 
 def reload_file():
     
@@ -986,9 +1001,13 @@ def main():
 
     print (cm.get_network_interfaces())
 
+
     dpg.show_viewport()
     dpg.start_dearpygui()
     dpg.destroy_context()
+
+    #非同期でリモートコントロールを起動
+    #prt.start_remote()
 
 '''
 

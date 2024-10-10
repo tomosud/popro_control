@@ -1,46 +1,43 @@
-import requests
-import json
+import asyncio
+from pynput import keyboard
 
-remote_token = None
+# 音量アップ時の処理
+async def volume_up():
+    print("Start Recording")
 
-def ret_url(key="recordValue"):
-    global remote_token
+# 音量ダウン時の処理
+async def volume_down():
+    print("Stop Recording")
 
-    if remote_token is None:
-        json_path = "C:/GoPro/Rename_Setting.ini"
-        
-        with open(json_path, 'r') as f:
-            data = json.load(f)
+# キーが押されたときの処理
+def on_press(key):
+    if key == keyboard.Key.media_volume_up:
+        asyncio.run_coroutine_threadsafe(volume_up(), loop)  # 非同期で音量アップを実行
+    elif key == keyboard.Key.media_volume_down:
+        asyncio.run_coroutine_threadsafe(volume_down(), loop)  # 非同期で音量ダウンを実行
+        pass
 
-        if 'api_remote' not in data:
-            print('Please fill in the blanks in Rename_Setting.ini')
-            return None
+# キーリスナーを開始する関数
+def start_key_listener():
+    with keyboard.Listener(on_press=on_press) as listener:
+        listener.join()
 
-        remote_token = data['api_remote']
+# 非同期で実行されるタスク
+async def some_async_task():
+    while True:
+        #print("Doing something else asynchronously...")
+        await asyncio.sleep(2)
 
-    url = f"https://ezdata.m5stack.com/api/store/{remote_token}/{key}"
-    print(f'URL: {url}')  # URLの出力を修正
+# メインの非同期関数
+async def main():
+    # キーリスナーを非同期で実行
+    listener_task = asyncio.to_thread(start_key_listener)
 
-    return url
+    # 他の非同期タスクを並行して実行
+    await asyncio.gather(listener_task, some_async_task())
 
-def write_value(value):
-    url = ret_url()  # ret_url関数を呼び出す
-    if url is None:
-        return None
-
-    headers = {'Content-Type': 'application/json'}
-    data = {'value': value}
-    response = requests.post(url, json=data, headers=headers)
-    return response.json()
-
-def read_value():
-    url = ret_url()  # ret_url関数を呼び出す
-    if url is None:
-        return None
-    
-    response = requests.get(url)
-    return response.json()
-
-# 使用例
-result = read_value()
-print(result)
+# 非同期イベントループを開始
+def start_remote():
+    print ('start remote!!')
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main())
