@@ -184,9 +184,9 @@ def copy_files(sender, app_data, user_data):
     if not os.path.exists(appnd_savepath):
         os.makedirs(appnd_savepath)
 
-    #非同期DLは失敗多いので廃止
-    #ph.download_main_wrapper(url_dict=url_dict,appnd_savepath=appnd_savepath)
-    cm.download_files_ThreadPoolExecutor(urls_and_filenames=url_dict, folder_path=appnd_savepath)
+    #非同期DLは失敗多いので廃止してたけど再開
+    ph.download_main_wrapper(url_dict=url_dict,appnd_savepath=appnd_savepath)
+    #cm.download_files_ThreadPoolExecutor(urls_and_filenames=url_dict, folder_path=appnd_savepath)
 
     print ('-----Finish!',user_data)
 
@@ -229,7 +229,8 @@ def copy_files(sender, app_data, user_data):
 
     end_time = time.time()  # 終了時間を記録
     elapsed_time = end_time - start_time  # 経過時間を計算
-    print(f"---------FileServerへのCopy 処理時間: {elapsed_time} 秒")        
+    print(f"---------FileServerへのCopy 処理時間: {elapsed_time} 秒")     
+    print('---Copyは終了した。')      
 
 def send_map(sender, app_data, user_data):
 
@@ -566,7 +567,6 @@ def add_button_files(parent):
                         base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
 
                         if base_url == gopro_dict[onnn]['url']:
-                            
 
                             #openurl = 'http://172.20.195.51:8080/videos/DCIM/100GOPRO/GX010026.MP4'
 
@@ -574,7 +574,7 @@ def add_button_files(parent):
 
                             openurl = onn['dl']
 
-                            dpg.add_button(label=str(kz),callback=open_url,user_data=openurl,width=20, height=15)
+                            dpg.add_button(label=str(kz),callback=open_url,user_data=openurl,width=15, height=15)
 
                             kz += 1
 
