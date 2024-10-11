@@ -673,6 +673,10 @@ def make_timeurl(url,timedict):
 
 def get_time():
 
+    if len(gopro_dict) == 0:
+        print ('no gopro')
+        return
+
     #now
     # 現在の日時を取得（日本時間）、zoneinfoを使用
     now_zoneinfo = datetime.now(ZoneInfo('Asia/Tokyo'))

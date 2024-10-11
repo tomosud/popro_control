@@ -1038,3 +1038,8 @@ def demoui():
     dpg.start_dearpygui()
     dpg.destroy_context()
 '''
+#main() を実行 ファイルを起動した場合は
+
+if __name__ == "__main__":
+    main()
+    #demoui()
