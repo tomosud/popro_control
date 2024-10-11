@@ -3,7 +3,7 @@ import popro_ui  # UI関数が定義されているモジュール
 from pynput import keyboard
 
 # グローバル変数としてイベントループを宣言
-loop = None
+remote_loop = None
 
 # 音量アップ時の処理
 async def volume_up():
@@ -20,11 +20,11 @@ async def volume_down():
 
 # キーが押されたときの処理
 def on_press(key):
-    global loop  # グローバル変数としてイベントループを使う
+    global remote_loop  # グローバル変数としてイベントループを使う
     if key == keyboard.Key.media_volume_up:
-        asyncio.run_coroutine_threadsafe(volume_up(), loop)  # 非同期で音量アップを実行
+        asyncio.run_coroutine_threadsafe(volume_up(), remote_loop)  # 非同期で音量アップを実行
     elif key == keyboard.Key.media_volume_down:
-        asyncio.run_coroutine_threadsafe(volume_down(), loop)  # 非同期で音量ダウンを実行
+        asyncio.run_coroutine_threadsafe(volume_down(), remote_loop)  # 非同期で音量ダウンを実行
 
 # キーリスナーを非同期で実行する関数
 async def start_key_listener():
@@ -50,13 +50,13 @@ async def main():
 
 # 非同期イベントループを開始
 def start_remote():
-    global loop  # グローバル変数としてイベントループを設定
+    global remote_loop  # グローバル変数としてイベントループを設定
     print('start remote!!')
     
     # 新しいイベントループを作成して設定
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
+    remote_loop = asyncio.new_event_remote_loop()
+    asyncio.set_event_remote_loop(remote_loop)
     
-    loop.run_until_complete(main())
+    remote_loop.run_until_complete(main())
 
 start_remote()
