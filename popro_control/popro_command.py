@@ -17,7 +17,7 @@ import psutil
 import socket
 import re
 
-from wakeonlan import send_magic_packet
+#from wakeonlan import send_magic_packet
 
 
 
@@ -767,7 +767,7 @@ def wol_all():
 
         print (len(mac_address),'<<<')
 
-        send_magic_packet(mac_address, ip_address, port=port)
+        #send_magic_packet(mac_address, ip_address, port=port)
 
         print ('try to send WOL :',gopro_dict[o]['name'])
 

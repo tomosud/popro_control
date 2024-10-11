@@ -431,9 +431,13 @@ def add_button_files(parent):
     #全てのgoproのfileをdictで取得
     cre_compi = 5
     dur_compi = 3
+    #dur_compi = 5
 
     ###
     alldic = cm.ret_all_media_palla(urls=list(gopro_dict.keys()))
+
+
+    #print ('alldic',alldic)
 
     #最初の一台
     k1 = list(alldic.keys())[0]
@@ -599,8 +603,14 @@ def add_button_files(parent):
                 #temp_popro_ui_dict['gopro_file_buttons_textfield']['tex_id'] = id
 
                 temp_popro_ui_dict['gopro_file_buttons_textfield'][id] = tex_id
-
-
+        '''
+        else:
+            #
+            print ('-棄却　no match')
+            print ('saiyo_list',len(saiyo_list))
+            for o in saiyo_list:
+                print (o)
+        '''
 
     temp_popro_ui_dict['gopro_file_buttons_parent'] = parent
 
