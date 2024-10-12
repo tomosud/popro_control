@@ -6,6 +6,8 @@ import os
 #from aiofiles import open as aio_open
 import popro_ui
 
+##複数のurlに対して非同期でダウンロードを行う
+
 async def download_one(session, url, save_path):
     start = time.time()
     print(f"------url: {url}")
@@ -64,3 +66,30 @@ def download_make_dict_and_do(urls=[], folder_path='C:/temp/DL'):
 
 
 
+##複数のurlに対して非同期でリクエストを送る
+
+# 非同期でPOSTリクエストを送る関数
+async def post_command_do(url):
+    async with aiohttp.ClientSession() as session:
+        try:
+            async with session.post(url) as response:
+                if response.status == 200:
+                    print(f"Success: {url}")
+                else:
+                    print(f"Failed: {url} - Status: {response.status}")
+        except Exception as e:
+            print(f"Error sending to {url}: {str(e)}")
+
+# 複数のリクエストを同時に処理する関数
+async def post_main(url_list):
+    tasks = []
+    for url in url_list:
+        tasks.append(post_command_do(url))
+    
+    # タスクを同時に実行
+    await asyncio.gather(*tasks)
+
+# 通常の関数で非同期処理を実行
+def execute_post(camera_urls):
+    # 非同期のイベントループを実行
+    asyncio.run(post_main(camera_urls))

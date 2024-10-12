@@ -574,6 +574,14 @@ def add_button_files(parent):
     ###
     alldic = cm.ret_all_media_palla(urls=list(gopro_dict.keys()))
 
+    '''
+    if alldic == None:
+        #取得に失敗　再チャレンジ
+        print ('取得に失敗 再チャレンジ')
+
+        psc.connect_all_cameras(try_to_connect = True)
+        add_button_files(parent)
+    '''
 
     #print ('alldic',alldic)
 
@@ -628,6 +636,17 @@ def add_button_files(parent):
             kouho_dict = {}
 
             min = 0
+
+            if total_media_dict[on] == None:
+                #取得に失敗　再チャレンジ
+                
+
+                psc.connect_all_cameras(try_to_connect = True)
+                raise ValueError("取得に失敗")
+                #pause
+                #time.sleep(2)
+
+                #add_button_files(parent)
 
             #全てのfileを比較
             for onn in total_media_dict[on]:
@@ -987,15 +1006,19 @@ def send_server_command(sender, app_data, user_data):
 
     send_server_command_do(user_data)
 
-
 def send_server_command_do(user_data,debug = 0):
 
     #print(f"rename_setting :: sender is: {sender}")
     #print(f"app_data is: {app_data}")
     print(f"user_data is: {user_data}")
 
+    
     #時計を一致
     #cm.get_time()
+    #psc.connect_all_cameras(try_to_connect = True)
+    #0.5秒待つ
+
+    #time.sleep(0.5)
 
     if 'Commend_server' in global_file_rename_dict.keys(): #設定あれば
         #if psc.connect_all_cameras(try_to_connect = True): 
@@ -1012,6 +1035,16 @@ def send_server_command_do(user_data,debug = 0):
         print ('no server setting')
         return
 
+#同時に録画コマンドを送るtest
+def record_test():
+
+    #print (gopro_dict)
+    url_list = []
+
+    for o in gopro_dict.keys():
+        url_list.append(o + '/gopro/camera/shutter/start')
+
+    ph.execute_post(url_list)
 
 def main():
 
@@ -1020,6 +1053,7 @@ def main():
 
     #接続を試みる
     psc.connect_all_cameras(try_to_connect = True)
+    time.sleep(1)
 
     ui_width = 650
 
@@ -1096,7 +1130,8 @@ def main():
                 with dpg.tree_node(label="Utility"):
                     dpg.add_text("Othr Test functions and utilities")
                     dpg.add_button(label="Set/ ALL Cams Time Settings",callback=cm.get_time)
-                    #dpg.add_button(label="color",callback=btest)
+                    dpg.add_button(label="record_test",callback=record_test)
+
                     #btest()
                     dpg.add_separator()
 

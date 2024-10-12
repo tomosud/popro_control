@@ -350,7 +350,9 @@ def ret_all_media_palla(urls):
                 results[url] = future.result()
             except Exception as exc:
                 print(f'URL {url} generated an exception: {exc}')
-                results[url] = None  # エラーが発生した場合はNoneを割り当てる
+                #results[url] = None  # エラーが発生した場合はNoneを割り当てる
+
+                return None
 
     #keyをsort
     results = dict(sorted(results.items()))     

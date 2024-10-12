@@ -1,3 +1,5 @@
+#これは廃止予定
+
 import asyncio
 import popro_ui  # UI関数が定義されているモジュール
 from pynput import keyboard
