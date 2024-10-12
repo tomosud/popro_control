@@ -153,6 +153,51 @@ def ret_dlpath_from_dict(dictn,time_stamp):
 
     return ret
 
+#takeにdeleteと記述された場合mp4を削除するtest
+def delete_files(button_id,deletemedias):
+
+    global copying
+
+    print('\ndelete flow!!')
+    print(f"button id: {button_id}")
+
+    copying = 1
+
+    with dpg.theme() as red_theme:
+        with dpg.theme_component(dpg.mvButton):
+            # ボタンの背景色を設定（ここでは赤色）
+            dpg.add_theme_color(dpg.mvThemeCol_Button, (255, 255, 32, 255))
+
+    dpg.bind_item_theme(button_id, red_theme)
+
+    #http://172.20.195.51:8080/videos/DCIM/100GOPRO/GX010736.MP4
+    #http://10.5.5.9:8080/gopro/media/delete/file?path=105GOPRO/GOPR6879.JPG
+
+    delete_urls = []
+
+    for o in deletemedias:
+
+        baseurl = get_base_url(o)
+        
+        sep = o.split('/')
+
+        delete_url = baseurl + '/gopro/media/delete/file?path=' + sep[-2] + '/' + sep[-1]
+        print ('delete',o)
+        print ('delete_url',delete_url)
+
+        delete_urls.append(delete_url)
+        cm.delete_file(delete_url)
+
+
+    #groupごと非表示
+    #dpg.delete_item(temp_popro_ui_dict['gopro_file_buttons_group'][button_id])
+
+    dpg.configure_item(temp_popro_ui_dict['gopro_file_buttons_group'][button_id], show=False)
+
+    copying = 0
+    pass
+
+
 def copy_files(sender, app_data, user_data):
 
     print(f"sender is button id: {sender}")
@@ -168,6 +213,26 @@ def copy_files(sender, app_data, user_data):
         print ('!今はCopy中なので受け付けない')
         return 0
     
+    #button idからtext idを取得
+    tex_id = temp_popro_ui_dict['gopro_file_buttons_textfield'][sender]
+    takename = dpg.get_value(tex_id)
+
+    m = temp_files_dict[user_data]
+
+    #
+    #m is list
+
+    if takename.lower() == 'delete':
+        #print ('media--\n',m)
+        deletemedias = []
+        for o in m:
+            deletemedias.append(o['dl'])
+        
+        delete_files(sender,deletemedias)
+
+        return 0
+
+
     copying = 1
 
     with dpg.theme() as red_theme:
@@ -177,15 +242,11 @@ def copy_files(sender, app_data, user_data):
 
     dpg.bind_item_theme(sender, red_theme)
 
-    m = temp_files_dict[user_data]
 
-    #print ('media--\n',m)
-    #m is list
 
     url_dict = {}
 
     appnd_savepath = ''
-
 
     #処理時間を計測する
     start_time = time.time()  # 開始時間を記録
@@ -218,13 +279,11 @@ def copy_files(sender, app_data, user_data):
     #takeの名前でcopy
     #uuid = str(uuid.uuid4())
 
-    #button idからtext idを取得
-    tex_id = temp_popro_ui_dict['gopro_file_buttons_textfield'][sender]
 
-    takename = dpg.get_value(tex_id)
 
-    #不要　廃止
     d = cm.copy_to_take_name(appnd_savepath,takename)
+    #不要　廃止
+    
     #cm.write_list_to_file([takename],d + 'take_names.txt')
 
     #ここでで接続しなおす
@@ -494,6 +553,9 @@ def add_button_files(parent):
     #あとでbuttonにアクセスして色変えたりするため
     temp_popro_ui_dict['gopro_file_buttons_textfield'] = {} 
 
+    #削除用にbuttonのidとgroupを紐づけておく
+    temp_popro_ui_dict['gopro_file_buttons_group'] = {} 
+
     #print ('add_button_gopros')
 
     #goproの台数
@@ -628,10 +690,17 @@ def add_button_files(parent):
 
             temp_files_dict[total_media_dict_main[o]['localtime']] = mp4s
 
-            with dpg.group(horizontal=True,parent=parent):
+            #削除用にbuttonのidとgroupを紐づけておく
+            grouptag = ret_uitag('temp','temp')
+            #temp_popro_ui_dict['gopro_single_buttons'].append(tag)
+
+            with dpg.group(tag=grouptag,horizontal=True,parent=parent):
             
 
                 id = dpg.add_button(label=label,callback=copy_files,user_data=total_media_dict_main[o]['localtime'],width=200, height=15)
+
+                #削除用にbuttonのidとgroupを紐づけておく
+                temp_popro_ui_dict['gopro_file_buttons_group'][id] = grouptag
 
                 #2024_04_03_21_16_09 時間を抽出 total_media_dict_main[o]['localtime']
                 sept = (total_media_dict_main[o]['localtime'].replace(' ','_').replace(':','_').replace('-','_')).split('_')
@@ -945,6 +1014,9 @@ def main():
 
     global gopro_dict
     gopro_dict = cm.ret_gopros()
+
+    #接続を試みる
+    psc.connect_all_cameras(try_to_connect = True)
 
     ui_width = 650
 

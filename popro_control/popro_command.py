@@ -130,14 +130,18 @@ def download_file(url, file_name, folder_path):
     else:
         print('Failed to download the file. Please check the URL or your internet connection.')
 
+#以下のようなurlを受け取り、ファイルを削除する
+#http://172.20.195.51:8080/gopro/media/delete/file?path=100GOPRO/GX010736.MP4
+def delete_file(url):
 
-'''
-# 使用例
-url = 'http://172.20.195.51:8080/videos/DCIM/100GOPRO/GX010001.MP4'
-folder_path = '/desired/path/to/save'
-file_name = 'GX010001.MP4'
-
-'''
+    # URLからファイルをダウンロード
+    response = requests.get(url)
+    
+    # HTTPリクエストが成功したか確認
+    if response.status_code == 200:
+        print(f'--File has been deleted')
+    else:
+        print('Failed to delete the file.')
 
 def check_urls(url,timeout=5):
 

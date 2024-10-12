@@ -4,8 +4,26 @@ import time
 
 # 使用例
 server_url = ""
-#server_url = "http://10.102.106.60:810"
+test_server_url = r"http://10.102.106.60:810"
+
+# カメラリスト
 all_cameras = []
+
+## カメラリスト debugにも使うのでall_camerasと分けた
+status_cameras = []
+'''
+以下を操作するための関数
+https://www.toolsforgopro.com/cameratools_server
+
+'''
+# JSONデータを読みやすく整形して出力する関数
+def print_pretty_json(data):
+    try:
+        # 整形して出力
+        formatted_json = json.dumps(data, indent=4, ensure_ascii=False)
+        print(formatted_json)
+    except (TypeError, ValueError) as e:
+        print(f"Error: {str(e)}")
 
 #カメラのリストをdictで返す
 def get_all_cameras():
@@ -31,8 +49,10 @@ def get_all_cameras():
     except Exception as e:
         return f"Exception: {str(e)}"
 
-#コマンドの実行部分
-def send_camera_command_do(camera_list,camera_command):
+
+#camera_command 機能の実行部分　sendCameraCommandで、カメラにコマンドを送信する後述のコマンドが使える
+#sendCameraCommand = False で、cameraCommandではなく通常のCommandを送信する
+def send_camera_command_do(camera_list,camera_command,sendCameraCommand=True):
 
     '''
     {
@@ -59,24 +79,31 @@ def send_camera_command_do(camera_list,camera_command):
         #url = f"{server_url}/camera/command"
 
         #url = server_url
-        
-        # リクエストデータ
+        #通常のCommandは以下のような構造
         payload = {
-            "command": "sendCameraCommand",
-            "cameras": camera_list,
-            "cameraCommand": camera_command
-        }
+                "command": camera_command,
+                "cameras": camera_list,
+            }
+        if sendCameraCommand:
+        #sendCameraCommand以下のような構造
+        # リクエストデータ
+            payload = {
+                "command": "sendCameraCommand",
+                "cameras": camera_list,
+                "cameraCommand": camera_command
+            }
         
         # POSTリクエストを送信
         response = requests.post(server_url, json=payload)
         
         # レスポンスの確認
         if response.status_code == 200:
-            return response.json()  # カメラリストをJSON形式で取得
+            return response.json()  # JSON形式で取得
         else:
             return f"Error: {response.status_code}"
     except Exception as e:
         return f"Exception: {str(e)}"
+
 
 
 def set_server_url(url):
@@ -157,5 +184,47 @@ def send_camera_command(camera_command):
         return False
     
 
+#####
+#testにも使うのでserver_urlを引数に追加
+def get_staus_all_cameras(server_url_now=''):
+    
+    global status_cameras
+    status_cameras = []
+
+    if len(status_cameras) == 0:
+
+        if server_url_now == '':
+            #setされてる前提
+            server_url_now = server_url
+        else:
+            set_server_url(server_url_now)
+
+        cameras_dict = get_all_cameras()
+
+        for o in cameras_dict['cameras']:
+            status_cameras.append(o['name'])
+
+        print (len(status_cameras),status_cameras)
+
+    '''
+    {
+	"command": "cameraStatus",
+	"cameras": ["GP123456"]
+    }
+    '''
+    cameraStatus_dict = send_camera_command_do(status_cameras,'cameraStatus',sendCameraCommand=False)
+    
+    #print(cameraStatus_dict)
+    print_pretty_json(cameraStatus_dict)
+
+    return cameraStatus_dict
+
+def dbug():
+    print("dbug")
+    get_staus_all_cameras(server_url_now=test_server_url)
 
 #send_camera_command('startRecording')
+
+if __name__ == "__main__":
+    dbug()
+    #demoui()
