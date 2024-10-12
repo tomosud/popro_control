@@ -638,7 +638,7 @@ def add_button_files(parent):
                 text_defo = 'take_' + sept[3] + '-' + sept[4] + '_' + sept[5]
 
                 #rename　書き換えたら辞書も書き換える
-                tex_id = dpg.add_input_text(label=":take",user_data=total_media_dict_main[o]['localtime'], default_value=text_defo,callback=rename_setting,width=100, height=15)
+                tex_id = dpg.add_input_text(label=":",user_data=total_media_dict_main[o]['localtime'], default_value=text_defo,callback=rename_setting,width=185, height=15)
 
                 kz = 1
 
@@ -946,15 +946,17 @@ def main():
     global gopro_dict
     gopro_dict = cm.ret_gopros()
 
+    ui_width = 650
+
     dpg.create_context()
     # ビューポートのサイズを設定
-    dpg.create_viewport(title="GoPro File explorer", width=600, height=800)
+    dpg.create_viewport(title="GoPro File explorer", width=ui_width+10, height=800)
 
     #dpg.create_viewport()
     dpg.setup_dearpygui()
     #width=1200, height=1000,no_close=True,pos=(0,0)
 
-    with dpg.window(label="GoPro File explorer",width=600, height=800,pos=(0,0),
+    with dpg.window(label="GoPro File explorer",width=ui_width, height=800,pos=(0,0),
                     no_title_bar=True,  # タイトルバーを非表示にする
                     no_move=True,       # ウィンドウの移動を禁止する
                     no_resize=True,     # ウィンドウのリサイズを禁止する
@@ -1064,7 +1066,7 @@ def main():
                     dpg.bind_item_theme(st, stop_theme)
 
         #gopros
-        with dpg.child_window(autosize_x=True, height=50):
+        with dpg.child_window(autosize_x=True, height=55):
             with dpg.group(horizontal=True):
 
                 parent=dpg.last_item()
@@ -1081,14 +1083,14 @@ def main():
                 '''
 
 
-        with dpg.child_window(autosize_x=True,width=600, height=50):
+        with dpg.child_window(autosize_x=True,width=ui_width*0.9, height=50):
             with dpg.group(horizontal=True, width=0):
-                dpg.add_button(label='Relaod Files',callback=reload_file,width=500, height=20)
+                dpg.add_button(label='Relaod Files',callback=reload_file,width=ui_width*0.85, height=20)
 
-        with dpg.child_window(autosize_x=True,width=600, height=500):
+        with dpg.child_window(autosize_x=True,width=ui_width*0.9, height=500):
             with dpg.group(horizontal=True, width=0):
 
-                with dpg.child_window(width=600, height=500):
+                with dpg.child_window(width=ui_width*0.95, height=500):
                     #撮影したfileのpairを見つけて取得ボタンとして表示
                     parent=dpg.last_item()
                     add_button_files(parent)
