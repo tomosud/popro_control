@@ -3,7 +3,8 @@ import json
 import time
 
 # 使用例
-server_url = "http://10.102.106.60:810"
+server_url = ""
+#server_url = "http://10.102.106.60:810"
 all_cameras = []
 
 #カメラのリストをdictで返す

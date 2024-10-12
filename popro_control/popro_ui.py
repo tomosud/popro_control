@@ -36,6 +36,9 @@ copying = 0
 if 'add_filepath' not in global_file_rename_dict.keys():
     global_file_rename_dict['add_filepath'] = ''
 
+#commandサーバーのアドレスを設定
+if 'Commend_server' in global_file_rename_dict.keys():
+    psc.set_server_url(global_file_rename_dict['Commend_server'])
 
 def ret_uitag(name_str,memo):
 
@@ -243,8 +246,8 @@ def copy_files(sender, app_data, user_data):
     copying = o
 
     end_time = time.time()  # 終了時間を記録
-    elapsed_time = end_time - start_time  # 経過時間を計算
-    print(f"---------FileServerへのCopy 処理時間: {elapsed_time} 秒")     
+    elapsed_timeb = end_time - start_time  # 経過時間を計算
+    print(f"---------FileServerへのCopy 処理時間: {elapsed_timeb - elapsed_time} 秒")     
     print('---Copyは終了した。')      
 
 def send_map(sender, app_data, user_data):
@@ -267,7 +270,11 @@ def add_button_gopros(parent):
     global temp_popro_ui_dict
     global gopro_dict
 
+    #goproのボタンのuiのtagを保存するためのlist
     temp_popro_ui_dict['gopro_single_buttons'] = []
+
+    #goproのipをkeyに、ボタンのuiのtagを保存するためのdict
+    temp_popro_ui_dict['gopro_single_buttons_ip_to_tag'] = {}
 
     #print ('add_button_gopros')
 
@@ -280,7 +287,10 @@ def add_button_gopros(parent):
         tag = ret_uitag(o,gopro_dict[o]['name'])
         temp_popro_ui_dict['gopro_single_buttons'].append(tag)
 
-        #print ('tag---',tag)
+        #print ('\n---gopro_single_buttons tag---',tag)
+        #print (o,gopro_dict[o]['name'])
+
+        temp_popro_ui_dict['gopro_single_buttons_ip_to_tag'][o] = tag
 
         label = gopro_dict[o]['name'].replace(' ','\n')
 
@@ -925,6 +935,7 @@ def main():
                     if 'Commend_server' in global_file_rename_dict.keys():
                         deff_url = global_file_rename_dict['Commend_server']
 
+
                     dpg.add_input_text(label="",user_data=['Commend_server',['http://','.',':']], default_value=deff_url,callback=setting_save_any,width=250, height=15)
 
                 with dpg.tree_node(label="Additional SavePath"):
@@ -938,6 +949,12 @@ def main():
                                         deff_url = global_file_rename_dict['add_filepath']
 
                                     dpg.add_input_text(label=":  ",default_value=deff_url,callback=addpath_setting,width=250, height=15)
+                
+                with dpg.tree_node(label="Utility"):
+                    dpg.add_text("Othr Test functions and utilities")
+                    dpg.add_button(label="Set/ ALL Cams Time Settings",callback=cm.get_time)
+
+                    dpg.add_separator()
 
         #record button
         #if psc.connect_all_cameras(try_to_connect = True): #全てのカメラに接続できたら

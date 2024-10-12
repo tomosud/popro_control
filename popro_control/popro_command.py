@@ -139,8 +139,6 @@ file_name = 'GX010001.MP4'
 
 '''
 
-
-
 def check_urls(url,timeout=5):
 
     #"http://172.20.195.51:8080/gp/gpMediaList"
@@ -202,7 +200,7 @@ def ret_gopros(connect=True):
                 
                 k = ip + '/gopro/camera/info'
                 r = get_json_data(k)
-                print ('r',r)
+                print (ip,r)
 
                 dictn['name'] = r['ap_ssid']
                 dictn['checkurl'] = ip + '/gp/gpMediaList'
@@ -263,7 +261,8 @@ def ret_gopros(connect=True):
     '''
 
     gopro_dict = ret
-    set_to_bacic_capture_mode()
+
+    #set_to_bacic_capture_mode()
     #keyをsort
     ret = dict(sorted(ret.items()))
     return ret

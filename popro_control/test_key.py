@@ -2,6 +2,7 @@ import dearpygui.dearpygui as dpg
 from pynput import keyboard
 import threading
 
+
 # キー入力時の関数を定義
 def on_press(key):
     #print (key)
