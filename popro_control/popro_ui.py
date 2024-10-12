@@ -12,6 +12,7 @@ import popro_para_http as ph
 import popro_camera_server_control as psc
 
 import time
+from urllib.parse import urlparse
 
 #import popro_remote as prt
 
@@ -61,6 +62,14 @@ def print_this():
     print(r.content)
 
 '''
+
+
+def get_base_url(url):
+    # URLを解析する
+    parsed_url = urlparse(url)
+    # スキーム、ネットロケーション（IPやドメイン）、ポートを組み合わせてベースURLを作成する
+    base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
+    return base_url
 
 def recording():
     
@@ -237,11 +246,15 @@ def copy_files(sender, app_data, user_data):
 
             print('-------add_filepath copy', d, addsavepath)
             
+            gopro_button_color_update('dummy',work='copying_add',all=True)
+
             # shutil.copytreeを使用してディレクトリをコピー
             # コピー先のディレクトリが既に存在してもエラーを発生させずに処理を進める
             shutil.copytree(d, addsavepath, dirs_exist_ok=True)
 
     button_file_color_update()
+    
+    gopro_button_color_update('dummy',work='base',all=True)
 
     copying = o
 
@@ -264,6 +277,57 @@ def send_map(sender, app_data, user_data):
     #print ('media',m)
     #print ('gopro_dict')
     #print (gopro_dict)
+
+'''
+def btest():
+    urlbase = 'http://172.25.113.51:8080/gopro/camera/get_date_time'
+    gopro_button_color_update(urlbase,work='base')
+'''
+
+def gopro_button_color_update(urlbase,work='base',all=False):
+    
+    global temp_popro_ui_dict
+
+        # テーマを作成
+    with dpg.theme() as gopro_button_base:
+        with dpg.theme_component(dpg.mvButton):
+            # ボタンの背景色を設定
+            dpg.add_theme_color(dpg.mvThemeCol_Button, (60,60,60, 255))
+    with dpg.theme() as gopro_button_copying_theme:
+        with dpg.theme_component(dpg.mvButton):
+            # ボタンの背景色を設定
+            dpg.add_theme_color(dpg.mvThemeCol_Button, (255,200,32, 255))
+    with dpg.theme() as gopro_button_copying_add_theme:
+        with dpg.theme_component(dpg.mvButton):
+            # ボタンの背景色を設定
+            dpg.add_theme_color(dpg.mvThemeCol_Button, (128,32, 32, 255))
+
+    dictn = temp_popro_ui_dict['gopro_single_buttons_ip_to_tag']
+
+    runall = []
+
+    if all:
+        for o in dictn.keys():
+            runall.append(o)
+    else:
+
+        runall = [urlbase]
+
+    for o in runall:
+
+        ip = get_base_url(o)
+    
+        uiid = dictn[ip]
+        
+        if work == 'base':
+            dpg.bind_item_theme(uiid, gopro_button_base)
+        
+        elif work == 'copying':
+            dpg.bind_item_theme(uiid, gopro_button_copying_theme)
+
+        elif work == 'copying_add':
+            dpg.bind_item_theme(uiid, gopro_button_copying_add_theme)
+
 
 def add_button_gopros(parent):
 
@@ -295,6 +359,8 @@ def add_button_gopros(parent):
         label = gopro_dict[o]['name'].replace(' ','\n')
 
         dpg.add_button(label=label,parent=parent,tag=temp_popro_ui_dict['gopro_single_buttons'][-1],callback=send_map,user_data=o,width=62, height=40)
+
+    gopro_button_color_update(o,work='base')
 
 def reload_file():
     
@@ -953,7 +1019,8 @@ def main():
                 with dpg.tree_node(label="Utility"):
                     dpg.add_text("Othr Test functions and utilities")
                     dpg.add_button(label="Set/ ALL Cams Time Settings",callback=cm.get_time)
-
+                    #dpg.add_button(label="color",callback=btest)
+                    #btest()
                     dpg.add_separator()
 
         #record button

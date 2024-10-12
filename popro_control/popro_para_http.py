@@ -4,13 +4,13 @@ import aiofiles
 import time
 import os
 #from aiofiles import open as aio_open
-
+import popro_ui
 
 async def download_one(session, url, save_path):
     start = time.time()
     print(f"------url: {url}")
     print(f"save_path: {save_path}")
-    
+
     async with session.get(url, timeout=600) as resp:
         # レスポンスステータスコードが200以外の場合にエラーをログに記録
         if resp.status != 200:
@@ -18,6 +18,8 @@ async def download_one(session, url, save_path):
             return
         
         print(f"Start: {resp.status}: {url}")
+
+        popro_ui.gopro_button_color_update(url,work='copying')
         
         async with aiofiles.open(save_path, 'wb') as fd:
             while True:
@@ -29,6 +31,7 @@ async def download_one(session, url, save_path):
     elapsed = round(time.time() - start)
     filename = url.split('/')[-1]
     print(f"End: {filename}: {elapsed}s")
+    popro_ui.gopro_button_color_update(url,work='base')
 
 async def download_many(url_dict, appnd_savepath):
     async with aiohttp.ClientSession() as session:
