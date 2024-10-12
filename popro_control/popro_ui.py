@@ -182,7 +182,7 @@ def delete_files(button_id,deletemedias):
         sep = o.split('/')
 
         delete_url = baseurl + '/gopro/media/delete/file?path=' + sep[-2] + '/' + sep[-1]
-        print ('delete',o)
+        #print ('delete',o)
         print ('delete_url',delete_url)
 
         delete_urls.append(delete_url)
@@ -688,6 +688,9 @@ def add_button_files(parent):
 
             label = total_media_dict_main[o]['localtime'] + ' : ' + total_media_dict_main[o]['dur'] + 'sec'
 
+            #yearはいらない
+            label = '/'.join(label.split('-')[1:])
+
             temp_files_dict[total_media_dict_main[o]['localtime']] = mp4s
 
             #削除用にbuttonのidとgroupを紐づけておく
@@ -697,7 +700,7 @@ def add_button_files(parent):
             with dpg.group(tag=grouptag,horizontal=True,parent=parent):
             
 
-                id = dpg.add_button(label=label,callback=copy_files,user_data=total_media_dict_main[o]['localtime'],width=200, height=15)
+                id = dpg.add_button(label=label,callback=copy_files,user_data=total_media_dict_main[o]['localtime'],width=160, height=15)
 
                 #削除用にbuttonのidとgroupを紐づけておく
                 temp_popro_ui_dict['gopro_file_buttons_group'][id] = grouptag
@@ -707,7 +710,7 @@ def add_button_files(parent):
                 text_defo = 'take_' + sept[3] + '-' + sept[4] + '_' + sept[5]
 
                 #rename　書き換えたら辞書も書き換える
-                tex_id = dpg.add_input_text(label=":",user_data=total_media_dict_main[o]['localtime'], default_value=text_defo,callback=rename_setting,width=185, height=15)
+                tex_id = dpg.add_input_text(label=":",user_data=total_media_dict_main[o]['localtime'], default_value=text_defo,callback=rename_setting,width=230, height=15)
 
                 kz = 1
 
