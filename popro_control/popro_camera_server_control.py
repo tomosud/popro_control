@@ -1,6 +1,9 @@
 import requests
 import json
 import time
+import threading
+
+#import popro_ui
 
 # 使用例
 server_url = ""
@@ -110,10 +113,11 @@ def set_server_url(url):
     
     global server_url
 
+    if url != server_url:
+        print("Server URL is set to ",server_url)
+        #pass
+
     server_url = url
-
-    print("Server URL is set to ",server_url)
-
 
 
 def connect_all_cameras(try_to_connect = True):
@@ -183,47 +187,65 @@ def send_camera_command(camera_command):
         print("Error: same Cameras are not connected. or some error occured.")
         return False
     
-
 #####
 #testにも使うのでserver_urlを引数に追加
-def get_staus_all_cameras(server_url_now=''):
-    
-    global status_cameras
-    status_cameras = []
+def get_status_all_cameras(server_url_now=''):
 
-    if len(status_cameras) == 0:
+    try:
+        # 実際の処理をここに記述
+        # 成功時に辞書を返す (例: {'camera1': 'active', 'camera2': 'inactive'})
 
-        if server_url_now == '':
-            #setされてる前提
-            server_url_now = server_url
-        else:
-            set_server_url(server_url_now)
+        global status_cameras
+        status_cameras = []
 
-        cameras_dict = get_all_cameras()
+        if len(status_cameras) == 0:
 
-        for o in cameras_dict['cameras']:
-            status_cameras.append(o['name'])
+            if server_url_now == '':
+                #setされてる前提
+                server_url_now = server_url
+            else:
+                set_server_url(server_url_now)
 
-        print (len(status_cameras),status_cameras)
+            cameras_dict = get_all_cameras()
 
-    '''
-    {
-	"command": "cameraStatus",
-	"cameras": ["GP123456"]
-    }
-    '''
-    cameraStatus_dict = send_camera_command_do(status_cameras,'cameraStatus',sendCameraCommand=False)
-    
-    #print(cameraStatus_dict)
-    print_pretty_json(cameraStatus_dict)
+            for o in cameras_dict['cameras']:
+                status_cameras.append(o['name'])
 
-    return cameraStatus_dict
+            #print (len(status_cameras),status_cameras)
 
+        '''
+        {
+        "command": "cameraStatus",
+        "cameras": ["GP123456"]
+        }
+        '''
+        cameraStatus_dict = send_camera_command_do(status_cameras,'cameraStatus',sendCameraCommand=False)
+        
+        #print(cameraStatus_dict)
+        return cameraStatus_dict
+
+    except Exception as e:
+        # 失敗時は空の辞書を返す
+        print(f"Error: {e}")
+        return {}    
+
+
+
+
+##test
 def dbug():
     print("dbug")
-    get_staus_all_cameras(server_url_now=test_server_url)
+    #r = get_staus_all_cameras(server_url_now=test_server_url)
+    #print_pretty_json(r)
+    # 別スレッドでカメラステータスの定期的な更新を開始
+    status_thread = threading.Thread(target=update_camera_status_periodically, args=(test_server_url,))
+    status_thread.daemon = True  # メインスレッド終了時にスレッドも終了
+    status_thread.start()
 
-#send_camera_command('startRecording')
+    # メインスレッドで別の処理を続行する
+    while True:
+        print("Main thread is running...")
+        time.sleep(5)
 
 if __name__ == "__main__":
     dbug()

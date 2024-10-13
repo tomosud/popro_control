@@ -1,4 +1,4 @@
-
+import re
 import shutil
 import dearpygui.dearpygui as dpg
 
@@ -13,6 +13,7 @@ import popro_camera_server_control as psc
 
 import time
 from urllib.parse import urlparse
+import threading
 
 #import popro_remote as prt
 
@@ -24,6 +25,10 @@ gopro_dict = {}
 temp_popro_ui_dict = {}
 
 temp_files_dict = {}
+
+#カメラの録画状態の保存
+info_dict_past= {}
+
 
 gopro_recording = False
 
@@ -305,7 +310,7 @@ def copy_files(sender, app_data, user_data):
 
             print('-------add_filepath copy', d, addsavepath)
             
-            gopro_button_color_update('dummy',work='copying_add',all=True)
+            gopro_button_color_update('dummy',work='copying_add',all=True,who='add copy')
 
             # shutil.copytreeを使用してディレクトリをコピー
             # コピー先のディレクトリが既に存在してもエラーを発生させずに処理を進める
@@ -313,7 +318,7 @@ def copy_files(sender, app_data, user_data):
 
     button_file_color_update()
     
-    gopro_button_color_update('dummy',work='base',all=True)
+    gopro_button_color_update('dummy',work='base',all=True,who='copy end')
 
     copying = o
 
@@ -343,8 +348,21 @@ def btest():
     gopro_button_color_update(urlbase,work='base')
 '''
 
-def gopro_button_color_update(urlbase,work='base',all=False):
+def gopro_button_color_update(urlbase,work='base',all=False,who='me'):
     
+    #名前で指定された場合はgopro_dictからurlを取得
+    if 'http://' not in urlbase:
+        for o in gopro_dict.keys():
+            #print (gopro_dict)
+            #よくない仕様　表記がぶれているので数字を取得する
+            nanb1 = gopro_degit_from_name(gopro_dict[o]['name'])
+            nanb2 = gopro_degit_from_name(urlbase)
+            #print ('gopronanber---',gopro_dict[o]['name'],nanb1,nanb2,urlbase)
+            if nanb1 == nanb2:
+                urlbase = o
+
+    #print ('---color chenge to ',work,' from ',who)
+
     global temp_popro_ui_dict
 
         # テーマを作成
@@ -360,6 +378,10 @@ def gopro_button_color_update(urlbase,work='base',all=False):
         with dpg.theme_component(dpg.mvButton):
             # ボタンの背景色を設定
             dpg.add_theme_color(dpg.mvThemeCol_Button, (128,32, 32, 255))
+    with dpg.theme() as gopro_button_recording_theme:
+        with dpg.theme_component(dpg.mvButton):
+            # ボタンの背景色を設定
+            dpg.add_theme_color(dpg.mvThemeCol_Button, (200,32, 32, 255))
 
     dictn = temp_popro_ui_dict['gopro_single_buttons_ip_to_tag']
 
@@ -375,6 +397,11 @@ def gopro_button_color_update(urlbase,work='base',all=False):
     for o in runall:
 
         ip = get_base_url(o)
+
+        if ip not in dictn.keys():
+            print ('no entry dictn',ip)
+            return 
+
     
         uiid = dictn[ip]
         
@@ -387,6 +414,8 @@ def gopro_button_color_update(urlbase,work='base',all=False):
         elif work == 'copying_add':
             dpg.bind_item_theme(uiid, gopro_button_copying_add_theme)
 
+        elif work == 'recording':
+            dpg.bind_item_theme(uiid, gopro_button_recording_theme)
 
 def add_button_gopros(parent):
 
@@ -419,7 +448,7 @@ def add_button_gopros(parent):
 
         dpg.add_button(label=label,parent=parent,tag=temp_popro_ui_dict['gopro_single_buttons'][-1],callback=send_map,user_data=o,width=62, height=40)
 
-    gopro_button_color_update(o,work='base')
+    gopro_button_color_update(o,work='base',who='add buton')
 
 def reload_file():
     
@@ -827,7 +856,6 @@ def add_button_command(parant,command):
 
     pass
 
-
 def addpath_setting(sender, app_data, user_data):
 
     print(f"rename_setting :: sender is: {sender}")
@@ -1008,6 +1036,7 @@ def send_server_command(sender, app_data, user_data):
 
 def send_server_command_do(user_data,debug = 0):
 
+
     #print(f"rename_setting :: sender is: {sender}")
     #print(f"app_data is: {app_data}")
     print(f"user_data is: {user_data}")
@@ -1045,6 +1074,88 @@ def record_test():
         url_list.append(o + '/gopro/camera/shutter/start')
 
     ph.execute_post(url_list)
+
+def test_func(sender, app_data, user_data): 
+
+    print (gopro_dict)
+    
+
+
+#send_camera_command('startRecording')
+
+# カメラのステータスを2秒ごとに取得するスレッドで実行される関数
+def update_camera_status_periodically():
+
+    #time.sleep(5)
+    global info_dict_past
+
+    while True:
+
+        info_dict = {}
+
+        status = psc.get_status_all_cameras('')
+
+        if 'cameras' not in status.keys():
+            print("Error: Camera status could not be updated.")
+        else:
+        # 取得した辞書の内容をここで処理する
+
+            #print("Camera status updated!:",len(status['cameras']),'cameras')
+
+            for o in status['cameras']:
+                #print(o['name'],o['bluetooth_status'])
+
+                dictn = {}
+                dictn['recording_time'] = '00h:00m:00s'
+                dictn['camera_recording'] = False
+                dictn['name'] = o['name']
+                dictn['bluetooth_status'] = o['bluetooth_status']
+                if o['bluetooth_status'] == 'connected':
+                    dictn['recording_time'] = o['recording_time']
+                    dictn['camera_recording'] = o['camera_recording']
+
+                #print (dictn['name'],dictn['bluetooth_status'],dictn['camera_recording'],dictn['recording_time'])
+
+                info_dict[o['name']] = dictn
+             
+
+
+            for o in info_dict.keys():
+
+                flg = 0
+
+                if o not in info_dict_past.keys():
+                    flg = 1
+                else:
+                    if info_dict[o]['camera_recording'] != info_dict_past[o]['camera_recording']:
+
+                        #print ('\n\nstatus chenged!! >> ',o,info_dict[o]['camera_recording'])
+
+                        flg = 1
+
+                if flg == 1 and copying == 0:
+
+                    if info_dict[o]['camera_recording'] == True:
+                        gopro_button_color_update(o,work='recording',who='recording')
+                    else:
+                        gopro_button_color_update(o,work='base',who='stoprecording')
+             
+
+
+        #前回の情報の保存
+        info_dict_past = info_dict
+        # 待つ
+        time.sleep(3)
+
+#HERO12 Black02 とかHERO12 Black2 (172.24.106.51)とか表記がぶれてるので数字を取り出す
+def gopro_degit_from_name(name):
+
+    name = name.replace(' ','').split('(')[0]
+
+    match = re.search(r'(\d+)$', name)
+    if match:
+        return int(match.group(1))
+    return None  # 数字が見つからなかった場合
 
 def main():
 
@@ -1130,7 +1241,7 @@ def main():
                 with dpg.tree_node(label="Utility"):
                     dpg.add_text("Othr Test functions and utilities")
                     dpg.add_button(label="Set/ ALL Cams Time Settings",callback=cm.get_time)
-                    dpg.add_button(label="record_test",callback=record_test)
+                    dpg.add_button(label="test_func",callback=test_func)
 
                     #btest()
                     dpg.add_separator()
@@ -1213,6 +1324,15 @@ def main():
 
     print (cm.get_network_interfaces())
 
+    #cemera状態の監視
+    print("start watch dog...")
+
+    
+    # 別スレッドでカメラステータスの定期的な更新を開始
+    status_thread = threading.Thread(target=update_camera_status_periodically, args=())
+    status_thread.daemon = True  # メインスレッド終了時にスレッドも終了
+    status_thread.start()
+    
 
     dpg.show_viewport()
     dpg.start_dearpygui()
