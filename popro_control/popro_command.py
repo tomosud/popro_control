@@ -460,7 +460,7 @@ def load_settings(file_name='tool_setting.ini'):
     except FileNotFoundError:
         print(f"File '{file_name}' not found. Returning empty dictionary.")
         return {}
-
+'''
 def check_url_one(url):
     try:
         response = requests.get(url)
@@ -468,11 +468,33 @@ def check_url_one(url):
         if response.status_code >= 200 and response.status_code < 300:
             return True, response.status_code
         else:
+            print ('---接続エラー:',url)
             return False, response.status_code
     except requests.exceptions.RequestException as e:
         # リクエストに関するエラーの処理
+        print ('---接続エラー:',url)
         return False, str(e)
-    
+'''
+
+def check_url_one(url):
+    retries = 3  # リトライ回数
+    for attempt in range(retries):
+        try:
+            response = requests.get(url)
+            # 200〜299のステータスコードは成功を示す
+            if response.status_code >= 200 and response.status_code < 300:
+                return True, response.status_code
+            else:
+                print('---接続エラー:', url)
+                return False, response.status_code
+        except requests.exceptions.RequestException as e:
+            # リクエストに関するエラーの処理
+            print(f'---接続エラー (リトライ {attempt + 1}/{retries}):', url)
+            if attempt < retries - 1:  # 最後のリトライでなければ待機して再試行
+                time.sleep(1 * (attempt + 1))
+            else:
+                return False, str(e)
+
 def set_to_bacic_capture_mode():
 
     for o in gopro_dict.keys():

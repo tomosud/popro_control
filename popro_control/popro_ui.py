@@ -11,11 +11,14 @@ import webbrowser
 import popro_para_http as ph
 import popro_camera_server_control as psc
 
+
 import time
 from urllib.parse import urlparse
 import threading
 
-#import popro_remote as prt
+from pynput import keyboard
+
+import popro_remote as prt
 
 folder_path_base = 'C:/GoPro/'
 
@@ -603,6 +606,13 @@ def add_button_files(parent):
     ###
     alldic = cm.ret_all_media_palla(urls=list(gopro_dict.keys()))
 
+    print ('alldic-------- ',len(alldic.keys()))
+
+    #print ('alldic\n',alldic)
+
+    #psc.print_pretty_json(alldic)
+
+
     '''
     if alldic == None:
         #取得に失敗　再チャレンジ
@@ -1157,7 +1167,36 @@ def gopro_degit_from_name(name):
         return int(match.group(1))
     return None  # 数字が見つからなかった場合
 
+'''
+def on_press_remo(key):
+    if 'value' in dir(key):
+        try:
+            #print (key)
+            if key.char == 'Key.media_volume_down':  # 'a'キーの入力をキャプチャ
+                print("media_volume_down")
+            elif key.char == 'Key.media_volume_up':  # 'b'キーの入力をキャプチャ
+                print("media_volume_up")
+        except AttributeError:
+            pass
+'''
+
 def main():
+
+    #bleリモコンの処理
+    # キー入力時の関数を定義
+
+
+    # 別スレッドでグローバルキーイベントを監視
+    def start_key_listener():
+        with keyboard.Listener(on_press=prt.on_press_remo) as listener:
+            listener.join()
+
+
+    # スレッドを使ってキーボードリスナーを別で実行
+    key_listener_thread = threading.Thread(target=start_key_listener, daemon=True)
+    key_listener_thread.start()
+
+    ###ここまで
 
     global gopro_dict
     gopro_dict = cm.ret_gopros()
@@ -1327,12 +1366,10 @@ def main():
     #cemera状態の監視
     print("start watch dog...")
 
-    
     # 別スレッドでカメラステータスの定期的な更新を開始
     status_thread = threading.Thread(target=update_camera_status_periodically, args=())
     status_thread.daemon = True  # メインスレッド終了時にスレッドも終了
     status_thread.start()
-    
 
     dpg.show_viewport()
     dpg.start_dearpygui()
@@ -1340,7 +1377,7 @@ def main():
 
     #非同期でリモートコントロールを起動
     #prt.start_remote()
-
+    import popro_remote as pmt
 '''
 
 def demoui():
