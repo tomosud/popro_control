@@ -32,7 +32,6 @@ temp_files_dict = {}
 #カメラの録画状態の保存
 info_dict_past= {}
 
-
 gopro_recording = False
 
 #各日付フォルダにfileのrenameの関連付けを保存するjsonと同期して使う
@@ -1098,6 +1097,7 @@ def update_camera_status_periodically():
 
     #time.sleep(5)
     global info_dict_past
+    #global gopro_recording
 
     while True:
 
@@ -1147,8 +1147,10 @@ def update_camera_status_periodically():
 
                     if info_dict[o]['camera_recording'] == True:
                         gopro_button_color_update(o,work='recording',who='recording')
+                        #gopro_recording = True
                     else:
                         gopro_button_color_update(o,work='base',who='stoprecording')
+                        #gopro_recording = False
              
 
 
@@ -1185,7 +1187,7 @@ def main():
     #bleリモコンの処理
     # キー入力時の関数を定義
 
-
+    '''
     # 別スレッドでグローバルキーイベントを監視
     def start_key_listener():
         with keyboard.Listener(on_press=prt.on_press_remo) as listener:
@@ -1195,7 +1197,8 @@ def main():
     # スレッドを使ってキーボードリスナーを別で実行
     key_listener_thread = threading.Thread(target=start_key_listener, daemon=True)
     key_listener_thread.start()
-
+    '''
+    
     ###ここまで
 
     global gopro_dict
@@ -1285,6 +1288,7 @@ def main():
                     #btest()
                     dpg.add_separator()
 
+        '''
         #record button
         #if psc.connect_all_cameras(try_to_connect = True): #全てのカメラに接続できたら
         if 'Commend_server' in global_file_rename_dict.keys(): #設定あれば
@@ -1324,7 +1328,7 @@ def main():
                         dpg.bind_item_theme(rb, record_theme)
 
                     dpg.bind_item_theme(st, stop_theme)
-
+        '''
         #gopros
         with dpg.child_window(autosize_x=True, height=55):
             with dpg.group(horizontal=True):
@@ -1350,7 +1354,7 @@ def main():
         with dpg.child_window(autosize_x=True,width=ui_width*0.9, height=500):
             with dpg.group(horizontal=True, width=0):
 
-                with dpg.child_window(width=ui_width*0.95, height=500):
+                with dpg.child_window(width=ui_width*0.95, height=550):
                     #撮影したfileのpairを見つけて取得ボタンとして表示
                     parent=dpg.last_item()
                     add_button_files(parent)
@@ -1364,12 +1368,14 @@ def main():
     print (cm.get_network_interfaces())
 
     #cemera状態の監視
-    print("start watch dog...")
+    #print("start watch dog...")
 
+    '''
     # 別スレッドでカメラステータスの定期的な更新を開始
     status_thread = threading.Thread(target=update_camera_status_periodically, args=())
     status_thread.daemon = True  # メインスレッド終了時にスレッドも終了
     status_thread.start()
+    '''
 
     dpg.show_viewport()
     dpg.start_dearpygui()
